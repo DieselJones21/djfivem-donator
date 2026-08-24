@@ -140,20 +140,42 @@ function mockOpen() {
 async function post(name, data = {}) {
     if (!IS_NUI) {
         if (name === 'close') return { ok: true };
-        if (['purchase', 'gift', 'redeem', 'adminGive', 'adminRemove', 'adminSet'].includes(name)) {
-            toast('Preview mode: action recorded locally.');
-            if (state.player && name === 'purchase') {
-                const item = findItem(data.itemId);
-                if (item) {
-                    state.player.coins = Math.max(0, state.player.coins - item.price);
-                    state.player.owned.unshift({ id: Date.now(), item_id: item.id, category: item.category || state.tab, label: item.label, active: 1, created_at: new Date().toISOString() });
-                    render();
-                }
+        if (name === 'purchase') {
+            const item = findItem(data.itemId);
+            if (!item) return { ok: false, message: 'Invalid item.' };
+            if (state.player.coins < item.price) return { ok: false, message: 'You do not have enough Rebel Coins.' };
+            state.player.coins -= item.price;
+            state.player.owned.unshift({ id: Date.now(), item_id: item.id, category: item.category || state.tab, label: item.label, active: 1, created_at: new Date().toISOString() });
+            state.player.history.unshift({ id: Date.now(), label: item.label, category: item.category || state.tab, price: item.price, created_at: new Date().toISOString() });
+            const self = (state.admin.players || []).find((p) => p.id === state.player.serverId);
+            if (self) self.coins = state.player.coins;
+            return { ok: true, player: state.player, admin: state.admin };
+        }
+        if (name === 'gift') {
+            return { ok: true, player: state.player, admin: state.admin };
+        }
+        if (['adminGive', 'adminRemove', 'adminSet'].includes(name)) {
+            const amount = Number(data.amount || 0);
+            const targetId = Number(data.targetId);
+            const target = (state.admin.players || []).find((p) => p.id === targetId);
+            if (!target || !Number.isFinite(amount) || amount < 0) {
+                return { ok: false, message: 'Enter a valid player and amount.' };
             }
-            if (name === 'adminGive' && state.player) {
-                state.player.coins += Number(data.amount || 0);
-                render();
-            }
+            if (name === 'adminGive') target.coins += amount;
+            else if (name === 'adminRemove') target.coins = Math.max(0, target.coins - amount);
+            else target.coins = amount;
+            if (targetId === state.player.serverId) state.player.coins = target.coins;
+            state.admin.logs.unshift({
+                id: Date.now(),
+                actor_name: state.player.name,
+                target_name: target.name,
+                action: name.replace('admin', 'coins_').toLowerCase(),
+                created_at: new Date().toISOString(),
+            });
+            return { ok: true, player: state.player, admin: state.admin };
+        }
+        if (name === 'redeem') {
+            state.player.coins += 100;
             return { ok: true, player: state.player, admin: state.admin };
         }
         return { ok: true, player: state.player, admin: state.admin, lookup: state.lookup };
@@ -301,7 +323,7 @@ function itemCard(item, extra = {}) {
     const tier = extra.tier || item.tier;
     const img = item.image
         ? `<img src="${item.image}" alt="${escapeHtml(item.label)}" onerror="this.style.display='none'" />`
-        : `<div style="font-size:28px;font-weight:800;opacity:.4">${escapeHtml((item.label || '?')[0])}</div>`;
+        : `<div class="ph">${item.petModel ? '🐾' : (item.weapon ? '✦' : escapeHtml((item.label || '?')[0]))}</div>`;
     return `
         <article class="card">
             <div class="media">
@@ -428,8 +450,8 @@ function polyline(series, mode) {
                 return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#e10600" stroke-width="2" />`;
             }).join('')}
             ${labels}
-            <text class="axis" x="16" y="40">$${max}</text>
-            <text class="axis" x="16" y="210">$0</text>
+            <text class="axis" x="16" y="40">${max} RC</text>
+            <text class="axis" x="16" y="210">0</text>
         </svg>
     `;
 }

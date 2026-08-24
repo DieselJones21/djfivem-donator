@@ -73,6 +73,7 @@ textarea {
     flex-direction: column;
     overflow: hidden;
     backdrop-filter: blur(16px);
+    position: relative;
 }
 
 .topbar {
@@ -335,6 +336,12 @@ textarea {
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
 }
 
+.card .media .ph {
+    font-size: 34px;
+    opacity: 0.85;
+    filter: drop-shadow(0 8px 16px rgba(225, 6, 0, 0.35));
+}
+
 .tierchip {
     position: absolute;
     top: 8px;
@@ -570,13 +577,14 @@ textarea {
 }
 
 .toasts {
-    position: fixed;
+    position: absolute;
     right: 18px;
-    bottom: 18px;
+    top: 62px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     z-index: 30;
+    pointer-events: none;
 }
 
 .toast {
