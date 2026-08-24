@@ -342,6 +342,39 @@ textarea {
     filter: drop-shadow(0 8px 16px rgba(225, 6, 0, 0.35));
 }
 
+.ox-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.ox-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0c0c0c;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 8px 3px 3px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.ox-chip img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #161010;
+}
+
+.weight {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .tierchip {
     position: absolute;
     top: 8px;

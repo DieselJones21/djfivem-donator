@@ -43,12 +43,21 @@ const state = {
 };
 
 function mockCatalog() {
+    const ox = (name) => {
+        const custom = name.startsWith('pet_') || name === 'lim_panther' || name === 'penthouse_card' || name === 'donator_plate';
+        if (custom) return `images/${name}.png`;
+        return `https://raw.githubusercontent.com/overextended/ox_inventory/main/web/images/${String(name).toLowerCase()}.png`;
+    };
+    const grant = (name, label, count = 1) => ({ name, label, count, image: ox(name), registered: true });
     const car = (id, label, price, model) => ({
         id, label, price, model, description: `${label} ready for the city streets.`,
         image: `https://docs.fivem.net/vehicles/${model}.webp`, unique: false,
     });
-    const gun = (id, label, price) => ({
-        id, label, price, description: `${label} with a donator ammo pack.`, unique: false,
+    const gun = (id, label, price, item) => ({
+        id, label, price, weapon: item, item, unique: false,
+        description: `${label} granted through ox_inventory with ammo.`,
+        image: ox(item),
+        ox: { registered: true, grants: [grant(item, label)] },
     });
     return {
         vehicles: {
@@ -57,27 +66,27 @@ function mockCatalog() {
             gold: [car('veh_t20', 'Progen T20', 1800, 't20'), car('veh_zentorno', 'Pegassi Zentorno', 1750, 'zentorno'), car('veh_krieger', 'Benefactor Krieger', 2100, 'krieger')],
         },
         weapons: {
-            bronze: [gun('wep_pistol', 'Pistol', 150), gun('wep_combatpistol', 'Combat Pistol', 180), gun('wep_microsmg', 'Micro SMG', 220)],
-            silver: [gun('wep_smg', 'SMG', 420), gun('wep_carbinerifle', 'Carbine Rifle', 550)],
-            gold: [gun('wep_pistol50', 'Pistol .50', 900), gun('wep_combatmg', 'Combat MG', 1400), gun('wep_rpg', 'RPG', 2200)],
+            bronze: [gun('wep_pistol', 'Pistol', 150, 'WEAPON_PISTOL'), gun('wep_combatpistol', 'Combat Pistol', 180, 'WEAPON_COMBATPISTOL'), gun('wep_microsmg', 'Micro SMG', 220, 'WEAPON_MICROSMG')],
+            silver: [gun('wep_smg', 'SMG', 420, 'WEAPON_SMG'), gun('wep_carbinerifle', 'Carbine Rifle', 550, 'WEAPON_CARBINERIFLE')],
+            gold: [gun('wep_pistol50', 'Pistol .50', 900, 'WEAPON_PISTOL50'), gun('wep_combatmg', 'Combat MG', 1400, 'WEAPON_COMBATMG'), gun('wep_rpg', 'RPG', 2200, 'WEAPON_RPG')],
         },
         extras: [
-            { id: 'ext_armor_pack', label: 'Armor Crate', price: 120, description: 'Five heavy armor plates delivered to inventory.' },
-            { id: 'ext_med_pack', label: 'Field Medic Kit', price: 90, description: 'Bandages, first aid, and a painkiller bundle.' },
-            { id: 'ext_starter_pack', label: 'Rebel Starter Pack', price: 350, unique: true, description: 'Armor, meds, lockpicks, and a pistol.' },
+            { id: 'ext_armor_pack', label: 'Armor Crate', price: 120, description: 'Five heavy armor plates delivered to ox_inventory.', image: ox('armour'), ox: { registered: true, grants: [grant('armour', 'Armour', 5)] } },
+            { id: 'ext_med_pack', label: 'Field Medic Kit', price: 90, description: 'Bandages and medikits delivered through ox_inventory.', image: ox('bandage'), ox: { registered: true, grants: [grant('bandage', 'Bandage', 10), grant('medikit', 'Medikit', 4)] } },
+            { id: 'ext_starter_pack', label: 'Rebel Starter Pack', price: 350, unique: true, description: 'Armor, meds, lockpicks, and a pistol via ox_inventory.', image: ox('WEAPON_PISTOL'), ox: { registered: true, grants: [grant('armour', 'Armour', 3), grant('bandage', 'Bandage', 10), grant('lockpick', 'Lockpick', 4), grant('WEAPON_PISTOL', 'Pistol')] } },
         ],
         exclusives: [
             { id: 'ex_nightshark', label: 'HVY Nightshark', price: 2600, unique: true, model: 'nightshark', image: 'https://docs.fivem.net/vehicles/nightshark.webp', description: 'Armored city exclusive. One per character.' },
-            { id: 'ex_penthouse', label: 'Penthouse Access Card', price: 2000, unique: true, description: 'City exclusive keycard for the Rebel penthouse.' },
+            { id: 'ex_penthouse', label: 'Penthouse Access Card', price: 2000, unique: true, description: 'City exclusive keycard for the Rebel penthouse.', image: ox('penthouse_card'), ox: { registered: true, grants: [grant('penthouse_card', 'Penthouse Access Card')] } },
         ],
         limited: [
             { id: 'lim_summer_growler', label: 'Summer Growler', price: 900, model: 'growler', image: 'https://docs.fivem.net/vehicles/growler.webp', limitedActive: true, limitedUntil: '2026-09-15T23:59:59Z', remaining: 40, stock: 40, description: 'Seasonal sports wagon.' },
-            { id: 'lim_panther', label: 'Limited Panther', price: 1500, unique: true, petModel: 'a_c_panther', limitedActive: true, limitedUntil: '2026-09-30T23:59:59Z', remaining: 15, description: 'Rare companion panther.' },
+            { id: 'lim_panther', label: 'Limited Panther', price: 1500, unique: true, petModel: 'a_c_panther', limitedActive: true, limitedUntil: '2026-09-30T23:59:59Z', remaining: 15, description: 'Rare companion panther.', image: ox('lim_panther'), ox: { registered: true, grants: [grant('lim_panther', 'Limited Panther')] } },
         ],
         pets: [
-            { id: 'pet_husky', label: 'Husky', price: 400, unique: true, petModel: 'a_c_husky', description: 'Loyal husky that follows you around the city.' },
-            { id: 'pet_rottweiler', label: 'Rottweiler', price: 450, unique: true, petModel: 'a_c_rottweiler', description: 'Protective rottweiler companion.' },
-            { id: 'pet_cat', label: 'Cat', price: 300, unique: true, petModel: 'a_c_cat_01', description: 'Street cat that decided you are its person.' },
+            { id: 'pet_husky', label: 'Husky', price: 400, unique: true, petModel: 'a_c_husky', description: 'Loyal husky. Use the ox_inventory item to spawn it.', image: ox('pet_husky'), ox: { registered: true, grants: [grant('pet_husky', 'Husky')] } },
+            { id: 'pet_rottweiler', label: 'Rottweiler', price: 450, unique: true, petModel: 'a_c_rottweiler', description: 'Protective rottweiler companion.', image: ox('pet_rottweiler'), ox: { registered: true, grants: [grant('pet_rottweiler', 'Rottweiler')] } },
+            { id: 'pet_cat', label: 'Cat', price: 300, unique: true, petModel: 'a_c_cat_01', description: 'Street cat that decided you are its person.', image: ox('pet_cat'), ox: { registered: true, grants: [grant('pet_cat', 'Cat')] } },
         ],
     };
 }
@@ -97,6 +106,7 @@ function mockOpen() {
             lifetimeSpent: 3510,
             lifetimeGranted: 5000,
             isAdmin: true,
+            ox: { weight: 12400, maxWeight: 70000, slots: 50 },
             owned: [
                 { id: 1, item_id: 'pet_husky', category: 'pets', label: 'Husky', active: 1, created_at: '2026-08-20 12:00:00' },
                 { id: 2, item_id: 'veh_sultan', category: 'vehicles', tier: 'bronze', label: 'Karin Sultan', active: 1, created_at: '2026-08-21 09:00:00' },
@@ -297,6 +307,9 @@ function renderStats() {
     const p = state.player || { coins: 0, owned: [], history: [] };
     const owned = (p.owned || []).filter((x) => Number(x.active) === 1).length;
     const purchases = (p.history || []).length;
+    const weight = p.ox && p.ox.maxWeight
+        ? `<div class="weight">ox_inventory ${(p.ox.weight / 1000).toFixed(1)} / ${(p.ox.maxWeight / 1000).toFixed(1)} kg</div>`
+        : '';
     document.getElementById('stats').innerHTML = `
         <article class="stat">
             <div class="label">${state.currency.name} Total</div>
@@ -309,6 +322,7 @@ function renderStats() {
         <article class="stat">
             <div class="label">Purchases</div>
             <div class="row"><div class="value">${purchases}</div><div class="badge">▲ ${formatCoins(p.lifetimeSpent || 0)}</div></div>
+            ${weight}
         </article>
     `;
 }
@@ -317,13 +331,37 @@ function escapeHtml(str) {
     return String(str || '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 }
 
+function oxImage(src, alt) {
+    if (!src) return '';
+    return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt || '')}" onerror="window.djOxImgError && window.djOxImgError(this)" />`;
+}
+
+window.djOxImgError = function (img) {
+    const tries = Number(img.dataset.try || 0) + 1;
+    img.dataset.try = String(tries);
+    const src = img.getAttribute('src') || '';
+    if (tries === 1 && src.endsWith('.png')) {
+        img.src = src.replace(/\.png$/, '.webp');
+        return;
+    }
+    const ph = document.createElement('div');
+    ph.className = 'ph';
+    ph.textContent = (img.alt || '?').slice(0, 1);
+    img.replaceWith(ph);
+};
+
 function itemCard(item, extra = {}) {
     const owned = owns(item.id);
     const disabled = extra.disabled || (item.unique && owned) || item.limitedActive === false || (item.remaining !== undefined && item.remaining !== null && item.remaining <= 0);
     const tier = extra.tier || item.tier;
-    const img = item.image
-        ? `<img src="${item.image}" alt="${escapeHtml(item.label)}" onerror="this.style.display='none'" />`
+    const imgSrc = item.image || item.ox?.grants?.[0]?.image;
+    const img = imgSrc
+        ? oxImage(imgSrc, item.label)
         : `<div class="ph">${item.petModel ? '🐾' : (item.weapon ? '✦' : escapeHtml((item.label || '?')[0]))}</div>`;
+    const grants = item.ox?.grants || [];
+    const grantRow = grants.length
+        ? `<div class="ox-row">${grants.map((g) => `<span class="ox-chip">${oxImage(g.image, g.label)} x${g.count} ${escapeHtml(g.label || g.name)}</span>`).join('')}</div>`
+        : '';
     return `
         <article class="card">
             <div class="media">
@@ -333,6 +371,7 @@ function itemCard(item, extra = {}) {
             <div class="body">
                 <h3>${escapeHtml(item.label)}</h3>
                 <p>${escapeHtml(item.description || '')}</p>
+                ${grantRow}
                 ${item.limitedUntil ? `<div class="countdown">${remainingLabel(item)}${item.remaining != null ? ` • ${item.remaining} left` : ''}</div>` : ''}
                 <div class="price-row">
                     <div class="price"><span>${formatCoins(item.price)}</span> ${state.currency.short}</div>
