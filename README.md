@@ -28,6 +28,7 @@ Open with **F7** or `/donator`.
 
 ```cfg
 ensure oxmysql
+ensure ox_inventory
 ensure dj-donator
 
 add_ace group.admin donator.admin allow
@@ -35,9 +36,45 @@ add_ace group.admin donator.admin allow
 
 4. Open [`config.lua`](config.lua) and set:
    - `Config.Webhooks` Discord URLs
-   - `Config.Framework` / `Config.Inventory` (`auto` is fine on ESX, QBCore, Qbox, ox_inventory)
-   - Extra item names so they match your inventory items
+   - Extra item names so they match your ox_inventory items
 5. Restart the server.
+
+## ox_inventory
+
+This resource is linked to ox_inventory for **item images**, **weight/slot checks**, **AddItem / RemoveItem**, and **usable pets**.
+
+Put this above the donator resource:
+
+```cfg
+ensure oxmysql
+ensure ox_inventory
+ensure dj-donator
+```
+
+### Images
+
+Weapon, ammo, armour, bandage, lockpick, radio, phone, and other stock items use the same files as your inventory UI:
+
+`nui://ox_inventory/web/images/<item>.png`
+
+That path follows the `inventory:imagepath` convar.
+
+### Inventory actions
+
+- Purchases call `CanCarryItem` before coins are taken
+- Grants use `AddItem` (weapons include ammo metadata)
+- If AddItem fails, coins are refunded and any partial items are removed
+- Admin refunds call `RemoveItem` for the same grants
+- Pets are ox_inventory items (`pet_husky`, etc.). Using the item in inventory spawns or dismisses the pet
+
+### Custom items
+
+Merge [`install/ox_inventory_items.lua`](install/ox_inventory_items.lua) into `ox_inventory/data/items.lua`, then restart ox_inventory. That file registers:
+
+- `donator_plate`, `penthouse_card`, `repairkit`
+- Pet items with `client.export = 'dj-donator.usePet'`
+
+Custom icons live in `html/images/` and are sent as `metadata.imageurl` so they show in ox_inventory even before you copy PNGs into `ox_inventory/web/images/`.
 
 Players open the store with **F7** or `/donator`. `/coins` prints the current Rebel Coin balance.
 

@@ -43,9 +43,12 @@ local function detectInventory()
 end
 
 CreateThread(function()
-    Wait(500)
+    Wait(1500)
     Framework.name = detectFramework()
     Framework.inventory = detectInventory()
+    if OxInv and OxInv.Ready() then
+        Framework.inventory = 'ox'
+    end
 
     if Framework.name == 'esx' then
         Framework.ESX = exports['es_extended']:getSharedObject()
@@ -170,8 +173,9 @@ end
 
 function Framework.AddItem(source, itemName, count, metadata)
     count = count or 1
-    if Framework.inventory == 'ox' then
-        return exports.ox_inventory:AddItem(source, itemName, count, metadata)
+    if Framework.inventory == 'ox' or (OxInv and OxInv.Ready()) then
+        local ok = OxInv.Add(source, itemName, count, metadata)
+        return ok and true or false
     elseif Framework.inventory == 'qb' then
         local player
         if Framework.name == 'qbx' and exports.qbx_core then
@@ -197,8 +201,8 @@ end
 
 function Framework.GiveWeapon(source, weaponName, ammo, itemName)
     ammo = ammo or 0
-    if Framework.inventory == 'ox' then
-        return exports.ox_inventory:AddItem(source, itemName or weaponName:lower(), 1, { ammo = ammo })
+    if Framework.inventory == 'ox' or (OxInv and OxInv.Ready()) then
+        return OxInv.Add(source, itemName or weaponName, 1, { ammo = ammo })
     elseif Framework.inventory == 'qb' then
         local player
         if Framework.name == 'qbx' and exports.qbx_core then

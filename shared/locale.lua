@@ -25,4 +25,8 @@ Locale = {
     item_granted = 'Item added to your inventory.',
     refunded = 'Purchase refunded.',
     no_active_pet = 'You do not have an active pet.',
+    cannot_carry = 'Your ox_inventory cannot carry that. Free some weight or slots.',
+    invalid_ox_item = 'That item is not registered in ox_inventory.',
+    inventory_full = 'ox_inventory rejected the grant. Coins were not taken.',
+    ox_missing = 'ox_inventory is not started.',
 }
