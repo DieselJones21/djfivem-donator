@@ -538,21 +538,20 @@ function renderInventory() {
     const owned = (state.player?.owned || []).filter((row) => Number(row.active) === 1);
     return `
         <section class="panel">
-            ${shopToolbar('Inventory', 'Everything you have unlocked with Rebel Coins.')}
-            ${owned.map((row) => `
+            ${shopToolbar('Inventory', 'ox_inventory items land in your bag. Vehicles stay in the garage. Use a pet item or the button here to spawn it.')}
+            ${owned.map((row) => {
+                const isPet = row.category === 'pets' || Boolean((findItem(row.item_id) || {}).petModel);
+                return `
                 <div class="owned-row">
                     <div>
                         <strong>${escapeHtml(row.label)}</strong>
                         <div class="sub">${escapeHtml(row.category)}${row.tier ? ` • ${row.tier}` : ''} • ${formatDate(row.created_at)}</div>
                     </div>
                     <div class="actions">
-                        ${row.category === 'pets' || (findItem(row.item_id) || {}).petModel ? `<button class="btn primary" data-spawn="${row.item_id}">Spawn pet</button>` : ''}
+                        ${isPet ? `<button class="btn primary" data-spawn="${row.item_id}">Spawn pet</button><button class="btn ghost" id="despawnPet">Send pet away</button>` : ''}
                     </div>
-                </div>
-            `).join('') || '<div class="empty">You do not own any donator items yet.</div>'}
-            <div class="actions" style="margin-top:14px">
-                <button class="btn ghost" id="despawnPet">Send pet away</button>
-            </div>
+                </div>`;
+            }).join('') || '<div class="empty">You do not own any donator items yet.</div>'}
         </section>
     `;
 }
