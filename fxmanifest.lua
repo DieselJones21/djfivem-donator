@@ -16,12 +16,14 @@ shared_scripts {
 client_scripts {
     'client/callbacks.lua',
     'client/pets.lua',
+    'client/oxinventory.lua',
     'client/main.lua',
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/framework.lua',
+    'server/oxinventory.lua',
     'server/webhooks.lua',
     'server/database.lua',
     'server/callbacks.lua',
@@ -34,8 +36,10 @@ files {
     'html/index.html',
     'html/style.css',
     'html/app.js',
+    'html/images/*.png',
 }
 
 dependencies {
     'oxmysql',
+    'ox_inventory',
 }

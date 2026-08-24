@@ -20,8 +20,17 @@ Config.AdminGroups = {
 -- Framework: 'auto' | 'esx' | 'qb' | 'qbx' | 'standalone'
 Config.Framework = 'auto'
 
--- Inventory: 'auto' | 'ox' | 'qb' | 'esx' | 'standalone'
-Config.Inventory = 'auto'
+-- Inventory: 'ox' | 'auto' | 'qb' | 'esx' | 'standalone'
+-- This store is built around ox_inventory images, weight, and AddItem/RemoveItem.
+Config.Inventory = 'ox'
+
+Config.OxInventory = {
+    resource = 'ox_inventory',
+    -- Reads inventory:imagepath convar at runtime; this is the default.
+    imagePath = 'nui://ox_inventory/web/images',
+    requireCanCarry = true,
+    refundIfAddFails = true,
+}
 
 -- Garage table mapping used when granting vehicles
 Config.Garage = {

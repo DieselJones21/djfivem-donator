@@ -48,7 +48,7 @@ local function publicItem(item)
     if item.limitedFrom or item.limitedUntil then
         active, reason, from, untilTime = limitedState(item)
     end
-    return {
+    local pub = {
         id = item.id,
         label = item.label,
         description = item.description,
@@ -71,6 +71,10 @@ local function publicItem(item)
         extras = item.extras,
         ammo = item.ammo,
     }
+    if OxInv and OxInv.Ready() then
+        OxInv.DecoratePublic(pub, item)
+    end
+    return pub
 end
 
 local function publicCatalog()
@@ -123,22 +127,18 @@ local function isOnCooldown(source)
     return false
 end
 
-local function applyInventoryGrant(targetSource, item, pendingData)
+local function applyInventoryGrant(targetSource, item)
     if not targetSource then
-        return false
+        return false, 'offline'
     end
-    if item.weapon then
-        Framework.GiveWeapon(targetSource, item.weapon, item.ammo or 0, item.item)
+    local grants = OxInv and OxInv.GrantsFor(item) or {}
+    if #grants == 0 then
+        return true, {}
     end
-    local extras = (pendingData and pendingData.extras) or item.extras
-    if extras then
-        for i = 1, #extras do
-            Framework.AddItem(targetSource, extras[i].item, extras[i].count or 1)
-        end
-    elseif item.item and not item.weapon then
-        Framework.AddItem(targetSource, item.item, 1)
+    if not OxInv or not OxInv.Ready() then
+        return false, 'ox_missing'
     end
-    return true
+    return OxInv.GiveGrants(targetSource, grants)
 end
 
 local function grantItem(targetSource, identifier, item)
@@ -171,9 +171,14 @@ local function grantItem(targetSource, identifier, item)
         else
             data.pending = true
         end
-    elseif item.weapon or item.extras or item.item then
+    elseif item.weapon or item.extras or item.item or item.petModel then
         if targetSource then
-            applyInventoryGrant(targetSource, item)
+            local ok, added = applyInventoryGrant(targetSource, item)
+            if not ok then
+                data.grantFailed = added or 'inventory_full'
+                return data
+            end
+            data.oxAdded = added
         else
             data.pending = true
         end
@@ -195,13 +200,12 @@ local function flushPending(source)
         if data.pending then
             local item = GetCatalogItem(row.item_id)
             if item then
-                applyInventoryGrant(source, item, data)
-                if item.model and not data.plate then
-                    data.plate = Framework.GiveVehicle(source, identifier, item)
+                local ok = applyInventoryGrant(source, item)
+                if ok then
+                    data.pending = false
+                    MySQL.update.await('UPDATE dj_donator_owned SET data = ? WHERE id = ?', { json.encode(data), row.id })
                 end
             end
-            data.pending = false
-            MySQL.update.await('UPDATE dj_donator_owned SET data = ? WHERE id = ?', { json.encode(data), row.id })
         end
     end
 end
@@ -226,6 +230,7 @@ local function playerSnapshot(source)
         history = history,
         series = series,
         isAdmin = Framework.IsAdmin(source),
+        ox = OxInv and OxInv.PlayerInfo(source) or nil,
     }
 end
 
@@ -265,6 +270,28 @@ local function canBuy(identifier, item)
     end
     if item.unique and Config.UniqueItemsOnce and DB.OwnsUnique(identifier, item.id) then
         return false, 'already_owned'
+    end
+    return true
+end
+
+local function inventoryGate(source, item)
+    local grants = OxInv and OxInv.GrantsFor(item) or {}
+    if #grants == 0 then
+        return true
+    end
+    if not source then
+        return true
+    end
+    if not OxInv or not OxInv.Ready() then
+        return false, 'ox_missing', Locale.ox_missing
+    end
+    local can, err, detail = OxInv.CanCarryGrants(source, grants)
+    if not can then
+        local msg = err == 'invalid_item' and Locale.invalid_ox_item or Locale.cannot_carry
+        if detail then
+            msg = ('%s (%s)'):format(msg, detail)
+        end
+        return false, err, msg
     end
     return true
 end
@@ -331,11 +358,19 @@ RegisterDonatorCallback('purchase', function(source, payload)
         }
         return { ok = false, error = reason, message = messages[reason] or 'Cannot buy this item.' }
     end
+    local invOk, invErr, invMsg = inventoryGate(source, item)
+    if not invOk then
+        return { ok = false, error = invErr, message = invMsg }
+    end
     if not DB.TrySpend(identifier, item.price) then
         return { ok = false, error = 'not_enough', message = Locale.not_enough }
     end
 
     local data = grantItem(source, identifier, item)
+    if data.grantFailed then
+        DB.AddCoins(identifier, item.price)
+        return { ok = false, error = 'inventory_full', message = Locale.inventory_full }
+    end
     DB.InsertPurchase(identifier, name, item, item.price, 1, nil)
     DB.InsertLog(identifier, name, identifier, name, 'purchase', {
         item = item.id,
@@ -397,11 +432,19 @@ RegisterDonatorCallback('gift', function(source, payload)
     if not ok then
         return { ok = false, error = reason, message = Locale[reason] or 'Cannot gift this item.' }
     end
+    local invOk, invErr, invMsg = inventoryGate(targetSource, item)
+    if not invOk then
+        return { ok = false, error = invErr, message = invMsg }
+    end
     if not DB.TrySpend(buyerId, item.price) then
         return { ok = false, error = 'not_enough', message = Locale.not_enough }
     end
 
     local data = grantItem(targetSource, targetIdentifier, item)
+    if data.grantFailed then
+        DB.AddCoins(buyerId, item.price)
+        return { ok = false, error = 'inventory_full', message = Locale.inventory_full }
+    end
     DB.InsertPurchase(buyerId, buyerName, item, item.price, 1, targetIdentifier)
     DB.InsertLog(buyerId, buyerName, targetIdentifier, targetName, 'gift', {
         item = item.id,
@@ -439,6 +482,15 @@ RegisterDonatorCallback('redeem', function(source, payload)
     if DB.HasRedeemed(row.id, identifier) then
         return { ok = false, error = 'invalid_code', message = Locale.invalid_code }
     end
+    if row.item_id and row.item_id ~= '' then
+        local item = GetCatalogItem(row.item_id)
+        if item then
+            local invOk, invErr, invMsg = inventoryGate(source, item)
+            if not invOk then
+                return { ok = false, error = invErr, message = invMsg }
+            end
+        end
+    end
 
     DB.RedeemCode(row.id, identifier)
     if row.coins and row.coins > 0 then
@@ -447,7 +499,10 @@ RegisterDonatorCallback('redeem', function(source, payload)
     if row.item_id and row.item_id ~= '' then
         local item = GetCatalogItem(row.item_id)
         if item then
-            grantItem(source, identifier, item)
+            local granted = grantItem(source, identifier, item)
+            if granted.grantFailed then
+                return { ok = false, error = 'inventory_full', message = Locale.inventory_full }
+            end
         end
     end
     DB.InsertLog(identifier, name, identifier, name, 'redeem', { code = code, coins = row.coins, item = row.item_id })
@@ -609,6 +664,11 @@ RegisterDonatorCallback('adminRefund', function(source, payload)
     end
     DB.AddCoins(purchase.identifier, purchase.price)
     DB.DeactivateOwned(purchase.identifier, purchase.item_id)
+    local catalogItem = GetCatalogItem(purchase.item_id)
+    local target = Framework.GetPlayerByIdentifier(purchase.identifier)
+    if target and catalogItem and OxInv and OxInv.Ready() then
+        OxInv.RemoveGrants(target, catalogItem)
+    end
     local actorId, actorName = Framework.GetIdentifier(source)
     DB.InsertLog(actorId, actorName, purchase.identifier, purchase.player_name, 'refund', {
         purchaseId = purchase.id,
@@ -616,7 +676,6 @@ RegisterDonatorCallback('adminRefund', function(source, payload)
         amount = purchase.price,
     })
     Webhooks.Admin(actorName, actorId, 'refund', ('Refunded %s RC for %s to %s'):format(purchase.price, purchase.label, purchase.identifier))
-    local target = Framework.GetPlayerByIdentifier(purchase.identifier)
     if target then
         Framework.Notify(target, Locale.refunded, 'inform')
         TriggerClientEvent('dj-donator:client:coinsUpdated', target, DB.GetCoins(purchase.identifier).coins)
