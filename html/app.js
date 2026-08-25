@@ -92,7 +92,7 @@ function mockNormalizeListing(data) {
     const item = {
         id,
         category,
-        tier: data.tier || ((category === 'vehicles' || category === 'weapons') ? 'bronze' : undefined),
+        tier: (category === 'vehicles' || category === 'weapons') ? (data.tier || 'bronze') : undefined,
         label,
         description: data.description || '',
         price,

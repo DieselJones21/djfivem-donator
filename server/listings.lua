@@ -96,8 +96,10 @@ function Listings.Normalize(payload, existingId)
         stock = nil
     end
     local tier = trim(payload.tier)
-    if tier == '' or not TIERS[tier] then
-        tier = (category == 'vehicles' or category == 'weapons') and 'bronze' or nil
+    if category ~= 'vehicles' and category ~= 'weapons' then
+        tier = nil
+    elseif tier == '' or not TIERS[tier] then
+        tier = 'bronze'
     end
 
     if category == 'vehicles' and model == '' then
