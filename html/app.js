@@ -441,7 +441,7 @@ function tierPills(kind) {
     const current = kind === 'vehicles' ? state.vehicleTier : state.weaponTier;
     return `
         <div class="pills" id="tierPills">
-            ${['bronze', 'silver', 'gold'].map((tier) => `<button class="pill ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier[0].toUpperCase() + tier.slice(1)}</button>`).join('')}
+            ${['bronze', 'silver', 'gold'].map((tier) => `<button class="pill ${tier} ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier[0].toUpperCase() + tier.slice(1)}</button>`).join('')}
         </div>
     `;
 }
@@ -515,10 +515,17 @@ function polyline(series, mode) {
     }).join('');
     return `
         <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-            <polyline fill="none" stroke="#e10600" stroke-width="4" points="${pts}" />
+            <defs>
+                <linearGradient id="chartStroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#ff8a70" />
+                    <stop offset="50%" stop-color="#e10600" />
+                    <stop offset="100%" stop-color="#ffd27a" />
+                </linearGradient>
+            </defs>
+            <polyline fill="none" stroke="url(#chartStroke)" stroke-width="4" points="${pts}" />
             ${pts.split(' ').map((p) => {
                 const [x, y] = p.split(',');
-                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#e10600" stroke-width="2" />`;
+                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#ff3b33" stroke-width="2" />`;
             }).join('')}
             ${labels}
             <text class="axis" x="16" y="40">${max} RC</text>
