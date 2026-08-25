@@ -86,9 +86,10 @@ local function publicCatalog()
         vehicles = { bronze = {}, silver = {}, gold = {} },
         weapons = { bronze = {}, silver = {}, gold = {} },
         extras = {},
+        bundles = {},
+        pets = {},
         exclusives = {},
         limited = {},
-        pets = {},
     }
 
     for tier, list in pairs(Catalog.vehicles) do
@@ -116,9 +117,10 @@ local function publicCatalog()
     end
 
     fill(Catalog.extras, out.extras, 'extras')
+    fill(Catalog.bundles, out.bundles, 'bundles')
+    fill(Catalog.pets, out.pets, 'pets')
     fill(Catalog.exclusives, out.exclusives, 'exclusives')
     fill(Catalog.limited, out.limited, 'limited')
-    fill(Catalog.pets, out.pets, 'pets')
     return out
 end
 

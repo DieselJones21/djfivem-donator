@@ -37,6 +37,7 @@ Locale = {
     invalid_price = 'Enter a valid price.',
     missing_model = 'Vehicle listings need a spawn name.',
     missing_item = 'Enter the ox_inventory item name.',
+    missing_bundle = 'Add at least two ox_inventory items to the bundle.',
     missing_pet = 'Pet listings need a ped model.',
     listing_exists = 'That listing id is already in the shop.',
 }

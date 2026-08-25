@@ -101,7 +101,7 @@ textarea {
 
 .topbar {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
     padding: 14px 16px 12px;
     border-bottom: 1px solid rgba(255, 90, 80, 0.18);
@@ -112,9 +112,11 @@ textarea {
 
 .tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     flex: 1;
-    overflow-x: auto;
+    min-width: 0;
+    overflow: visible;
     padding-bottom: 4px;
 }
 
@@ -129,11 +131,11 @@ textarea {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 9px 12px;
+    padding: 8px 10px;
     border-radius: 10px;
     cursor: pointer;
     white-space: nowrap;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     transition: 0.18s ease;
 }
@@ -168,6 +170,8 @@ textarea {
     border: 1px solid rgba(255, 90, 80, 0.25);
     border-radius: 999px;
     min-width: 180px;
+    align-self: center;
+    margin-left: auto;
 }
 
 .profile .meta {
@@ -473,6 +477,7 @@ textarea {
 .tierchip.silver { color: var(--silver); border-color: rgba(207, 211, 216, 0.45); background: linear-gradient(180deg, rgba(207, 211, 216, 0.18), rgba(0, 0, 0, 0.5)); }
 .tierchip.gold { color: var(--gold); border-color: rgba(224, 184, 74, 0.5); background: linear-gradient(180deg, rgba(224, 184, 74, 0.22), rgba(0, 0, 0, 0.5)); }
 .tierchip.limited { color: var(--red-2); }
+.tierchip.bundle { color: #ffd27a; border-color: rgba(255, 210, 122, 0.45); background: linear-gradient(180deg, rgba(255, 210, 122, 0.22), rgba(0, 0, 0, 0.5)); }
 
 .card .body {
     padding: 12px;
@@ -673,6 +678,32 @@ textarea {
 
 .check-label input {
     width: auto;
+}
+
+.bundle-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bundle-row {
+    display: grid;
+    grid-template-columns: 1fr 90px auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.bundle-row input {
+    background: linear-gradient(180deg, #241318, #12080a);
+    border: 1px solid rgba(255, 90, 80, 0.18);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.bundle-row input:focus {
+    border-color: rgba(255, 90, 80, 0.55);
 }
 
 .admin-layout {
