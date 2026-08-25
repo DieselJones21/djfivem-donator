@@ -1,7 +1,12 @@
 --[[
-    Merge these entries into ox_inventory/data/items.lua
-    then copy any PNGs from html/images into ox_inventory/web/images/
-    (or keep client.image as a nui://dj-donator path).
+    Merge these entries into ox_inventory/data/items.lua.
+
+    Shop and inventory icons come from Fivemanage (Config.Images) via metadata.imageurl
+    when a player receives the item from dj-donator. You do not need local PNGs if
+    Config.Images.baseUrl is set.
+
+    Optional: set client.image to the same Fivemanage URL so the item also shows
+    correctly when given by other scripts.
 
     Restart ox_inventory after merging.
 ]]

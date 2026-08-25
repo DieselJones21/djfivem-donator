@@ -70,7 +70,11 @@ local function publicItem(item)
         limitedUntilTs = untilTime,
         extras = item.extras,
         ammo = item.ammo,
+        garageId = item.garageId,
+        garageType = item.garageType,
     }
+    pub.image = Images.Resolve(item, pub.image)
+    pub.imageKey = item.imageKey or Images.Key(item)
     if OxInv and OxInv.Ready() then
         OxInv.DecoratePublic(pub, item)
     end
@@ -152,24 +156,12 @@ local function grantItem(targetSource, identifier, item)
     }
 
     if item.model then
-        if targetSource then
-            data.plate = Framework.GiveVehicle(targetSource, identifier, item)
-        elseif Framework.name == 'esx' then
-            local plate = ('RC%06d'):format(math.random(0, 999999))
-            MySQL.insert.await(
-                'INSERT INTO owned_vehicles (owner, plate, vehicle, type, stored) VALUES (?, ?, ?, ?, ?)',
-                { identifier, plate, json.encode({ model = joaat(item.model), plate = plate }), item.garageType or 'car', 1 }
-            )
-            data.plate = plate
-        elseif Framework.name == 'qb' or Framework.name == 'qbx' then
-            local plate = ('RC%06d'):format(math.random(0, 999999))
-            MySQL.insert.await(
-                'INSERT INTO player_vehicles (citizenid, vehicle, hash, mods, plate, garage, state) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                { identifier, item.model, joaat(item.model), json.encode({ model = joaat(item.model), plate = plate }), plate, Config.Garage.qb.garage, 1 }
-            )
-            data.plate = plate
-        else
+        if not targetSource and Framework.name == 'standalone' then
             data.pending = true
+        else
+            local plate, garageId = Framework.GiveVehicle(targetSource, identifier, item)
+            data.plate = plate
+            data.garageId = garageId
         end
     elseif item.weapon or item.extras or item.item or item.petModel then
         if targetSource then

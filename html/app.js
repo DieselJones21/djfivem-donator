@@ -43,15 +43,25 @@ const state = {
 };
 
 function mockCatalog() {
+    // In-game images come from Config.Images (Fivemanage). Preview uses the same
+    // filename keys with docs.fivem / local fallbacks so cards still render here.
+    // Paste your folder URL to preview Fivemanage in the browser:
+    // const FM_BASE = 'https://r2.fivemanage.com/YOUR_TEAM_ID';
+    const FM_BASE = '';
+    const fm = (key, fallback) => {
+        if (FM_BASE) return `${FM_BASE.replace(/\/$/, '')}/${String(key).toLowerCase()}.webp`;
+        return fallback;
+    };
     const ox = (name) => {
         const custom = name.startsWith('pet_') || name === 'lim_panther' || name === 'penthouse_card' || name === 'donator_plate';
-        if (custom) return `images/${name}.png`;
-        return `https://raw.githubusercontent.com/overextended/ox_inventory/main/web/images/${String(name).toLowerCase()}.png`;
+        if (custom) return fm(name, `images/${name}.png`);
+        return fm(name, `https://raw.githubusercontent.com/overextended/ox_inventory/main/web/images/${String(name).toLowerCase()}.png`);
     };
     const grant = (name, label, count = 1) => ({ name, label, count, image: ox(name), registered: true });
     const car = (id, label, price, model) => ({
         id, label, price, model, description: `${label} ready for the city streets.`,
-        image: `https://docs.fivem.net/vehicles/${model}.webp`, unique: false,
+        image: fm(model, `https://docs.fivem.net/vehicles/${model}.webp`), unique: false,
+        garageId: 'legion',
     });
     const gun = (id, label, price, item) => ({
         id, label, price, weapon: item, item, unique: false,
@@ -342,6 +352,10 @@ window.djOxImgError = function (img) {
     const src = img.getAttribute('src') || '';
     if (tries === 1 && src.endsWith('.png')) {
         img.src = src.replace(/\.png$/, '.webp');
+        return;
+    }
+    if (tries === 1 && src.endsWith('.webp')) {
+        img.src = src.replace(/\.webp$/, '.png');
         return;
     }
     const ph = document.createElement('div');

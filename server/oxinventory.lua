@@ -92,6 +92,7 @@ function OxInv.GrantsFor(item)
             end
         end
         metadata.description = ('%s • %s'):format(item.label or 'Donator', Config.ServerName)
+        metadata.imageurl = metadata.imageurl or Images.ForGrant(item.item or item.weapon, item)
         grants[#grants + 1] = {
             name = item.item or item.weapon,
             count = 1,
@@ -101,10 +102,17 @@ function OxInv.GrantsFor(item)
     if item.extras then
         for i = 1, #item.extras do
             local extra = item.extras[i]
+            local metadata = {}
+            if extra.metadata then
+                for k, v in pairs(extra.metadata) do
+                    metadata[k] = v
+                end
+            end
+            metadata.imageurl = metadata.imageurl or Images.ForGrant(extra.item, extra)
             grants[#grants + 1] = {
                 name = extra.item,
                 count = extra.count or 1,
-                metadata = extra.metadata,
+                metadata = metadata,
             }
         end
     end
@@ -116,6 +124,7 @@ function OxInv.GrantsFor(item)
                 petModel = item.petModel,
                 label = item.label,
                 description = ('Use to spawn or dismiss your %s.'):format(item.label or 'pet'),
+                imageurl = Images.ForGrant(item.id, item),
             },
         }
     end
@@ -130,11 +139,12 @@ function OxInv.DecoratePublic(pub, raw)
     pub.ox = { grants = {}, registered = true, inventory = 'ox' }
     for i = 1, #grants do
         local resolved, data, image = OxInv.Describe(grants[i].name)
+        local fm = Images.ForGrant(grants[i].name, raw)
         pub.ox.grants[#pub.ox.grants + 1] = {
             name = resolved or grants[i].name,
             count = grants[i].count,
             label = data and data.label or grants[i].name,
-            image = image,
+            image = fm or image,
             weight = data and data.weight or 0,
             registered = resolved ~= nil,
         }
@@ -142,7 +152,10 @@ function OxInv.DecoratePublic(pub, raw)
             pub.ox.registered = false
         end
     end
-    if (not pub.image or pub.image == '') and pub.ox.grants[1] and pub.ox.grants[1].image then
+    local fmItem = Images.Resolve(raw)
+    if fmItem then
+        pub.image = fmItem
+    elseif (not pub.image or pub.image == '') and pub.ox.grants[1] and pub.ox.grants[1].image then
         pub.image = pub.ox.grants[1].image
     end
     return pub
@@ -190,8 +203,9 @@ function OxInv.Add(source, name, count, metadata)
         return false, 'invalid_item'
     end
     metadata = metadata or {}
-    if resolved == 'donator_plate' or resolved == 'penthouse_card' or resolved == 'lim_panther' or resolved:find('^pet_') then
-        metadata.imageurl = metadata.imageurl or ('nui://dj-donator/html/images/%s.png'):format(resolved)
+    metadata.imageurl = metadata.imageurl or Images.Resolve(resolved) or Images.Resolve(name)
+    if not metadata.imageurl and (resolved == 'donator_plate' or resolved == 'penthouse_card' or resolved == 'lim_panther' or resolved:find('^pet_')) then
+        metadata.imageurl = ('nui://dj-donator/html/images/%s.png'):format(resolved)
     end
     local ok, success, response = pcall(function()
         return exports.ox_inventory:AddItem(source, resolved, count, metadata)

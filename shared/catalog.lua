@@ -1,12 +1,12 @@
 local function veh(model)
-    return Config.VehicleImage(model)
+    return Images.Resolve(model, Config.VehicleImage(model))
 end
 
 --[[
     Catalog item fields:
     id, label, description, price, category, tier?, model?, item?, weapon?,
-    unique?, stock?, limitedFrom?, limitedUntil?, image?, ammo?,
-    petModel?, extras? (inventory items granted with purchase)
+    unique?, stock?, limitedFrom?, limitedUntil?, image?, imageKey?, ammo?,
+    petModel?, extras?, garageId?, garageType?
 ]]
 
 Catalog = {
@@ -318,6 +318,7 @@ Catalog = {
             label = 'Armor Crate',
             description = 'Five heavy armor plates delivered to inventory.',
             price = 120,
+            imageKey = 'armour',
             extras = {
                 { item = 'armour', count = 5 },
             },
@@ -327,6 +328,7 @@ Catalog = {
             label = 'Field Medic Kit',
             description = 'Bandages and medikits delivered through ox_inventory.',
             price = 90,
+            imageKey = 'bandage',
             extras = {
                 { item = 'bandage', count = 10 },
                 { item = 'medikit', count = 4 },
@@ -337,6 +339,7 @@ Catalog = {
             label = 'Lockpick Set',
             description = 'A stack of lockpicks delivered through ox_inventory.',
             price = 80,
+            imageKey = 'lockpick',
             extras = {
                 { item = 'lockpick', count = 8 },
             },
@@ -346,6 +349,7 @@ Catalog = {
             label = 'Mobile Repair Kit',
             description = 'Repair kits and a jerry can for roadside recoveries.',
             price = 110,
+            imageKey = 'repairkit',
             extras = {
                 { item = 'repairkit', count = 5 },
                 { item = 'WEAPON_PETROLCAN', count = 1 },
@@ -356,6 +360,7 @@ Catalog = {
             label = 'Encrypted Radio',
             description = 'Long-range encrypted radio for crew comms.',
             price = 70,
+            imageKey = 'radio',
             extras = {
                 { item = 'radio', count = 1 },
             },
@@ -365,6 +370,7 @@ Catalog = {
             label = 'Burner Phone Bundle',
             description = 'Spare phones for identities that need a reset.',
             price = 60,
+            imageKey = 'phone',
             extras = {
                 { item = 'phone', count = 2 },
             },
@@ -374,6 +380,7 @@ Catalog = {
             label = 'Mixed Ammo Crate',
             description = 'Pistol, rifle, and shotgun ammo in one drop.',
             price = 140,
+            imageKey = 'ammo-9',
             extras = {
                 { item = 'ammo-9', count = 120 },
                 { item = 'ammo-rifle', count = 120 },
@@ -386,6 +393,7 @@ Catalog = {
             description = 'Armor, meds, lockpicks, and a pistol via ox_inventory.',
             price = 350,
             unique = true,
+            imageKey = 'armour',
             extras = {
                 { item = 'armour', count = 3 },
                 { item = 'bandage', count = 10 },
@@ -442,6 +450,7 @@ Catalog = {
             description = 'Unlocks donator-only number plate style (metadata flag).',
             price = 500,
             unique = true,
+            imageKey = 'donator_plate',
             extras = {
                 { item = 'donator_plate', count = 1 },
             },
@@ -452,6 +461,7 @@ Catalog = {
             description = 'City exclusive keycard for the Rebel penthouse interior.',
             price = 2000,
             unique = true,
+            imageKey = 'penthouse_card',
             extras = {
                 { item = 'penthouse_card', count = 1 },
             },
@@ -489,6 +499,7 @@ Catalog = {
             label = 'Limited Panther',
             description = 'Rare companion panther. Only available during this window.',
             petModel = 'a_c_panther',
+            imageKey = 'lim_panther',
             price = 1500,
             unique = true,
             limitedFrom = '2026-08-01T00:00:00Z',
@@ -516,6 +527,7 @@ Catalog = {
             label = 'Husky',
             description = 'Loyal husky that follows you around the city.',
             petModel = 'a_c_husky',
+            imageKey = 'pet_husky',
             price = 400,
             unique = true,
         },
@@ -524,6 +536,7 @@ Catalog = {
             label = 'Retriever',
             description = 'Friendly retriever. One active pet at a time.',
             petModel = 'a_c_retriever',
+            imageKey = 'pet_retriever',
             price = 380,
             unique = true,
         },
@@ -532,6 +545,7 @@ Catalog = {
             label = 'Rottweiler',
             description = 'Protective rottweiler companion.',
             petModel = 'a_c_rottweiler',
+            imageKey = 'pet_rottweiler',
             price = 450,
             unique = true,
         },
@@ -540,6 +554,7 @@ Catalog = {
             label = 'Pug',
             description = 'Small, stubborn, and surprisingly fast.',
             petModel = 'a_c_pug',
+            imageKey = 'pet_pug',
             price = 320,
             unique = true,
         },
@@ -548,6 +563,7 @@ Catalog = {
             label = 'Cat',
             description = 'Street cat that decided you are its person.',
             petModel = 'a_c_cat_01',
+            imageKey = 'pet_cat',
             price = 300,
             unique = true,
         },
@@ -556,6 +572,7 @@ Catalog = {
             label = 'Poodle',
             description = 'Show-dog energy with donator-only collar metadata.',
             petModel = 'a_c_poodle',
+            imageKey = 'pet_poodle',
             price = 360,
             unique = true,
         },
