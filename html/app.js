@@ -33,7 +33,7 @@ const state = {
     search: '',
     player: null,
     catalog: null,
-    admin: { players: [], logs: [], codes: [] },
+    admin: { players: [], logs: [], codes: [], listings: [] },
     lookup: null,
     players: [],
     currency: { name: 'Rebel Coins', short: 'RC' },
@@ -42,63 +42,82 @@ const state = {
     locale: {},
 };
 
-function mockCatalog() {
-    // In-game images come from Config.Images (Fivemanage). Preview uses the same
-    // filename keys with docs.fivem / local fallbacks so cards still render here.
-    // Paste your folder URL to preview Fivemanage in the browser:
-    // const FM_BASE = 'https://r2.fivemanage.com/YOUR_TEAM_ID';
-    const FM_BASE = '';
-    const fm = (key, fallback) => {
-        if (FM_BASE) return `${FM_BASE.replace(/\/$/, '')}/${String(key).toLowerCase()}.webp`;
-        return fallback;
-    };
-    const ox = (name) => {
-        const custom = name.startsWith('pet_') || name === 'lim_panther' || name === 'penthouse_card' || name === 'donator_plate';
-        if (custom) return fm(name, `images/${name}.png`);
-        return fm(name, `https://raw.githubusercontent.com/overextended/ox_inventory/main/web/images/${String(name).toLowerCase()}.png`);
-    };
-    const grant = (name, label, count = 1) => ({ name, label, count, image: ox(name), registered: true });
-    const car = (id, label, price, model) => ({
-        id, label, price, model, description: `${label} ready for the city streets.`,
-        image: fm(model, `https://docs.fivem.net/vehicles/${model}.webp`), unique: false,
-        garageId: 'legion',
-    });
-    const gun = (id, label, price, item) => ({
-        id, label, price, weapon: item, item, unique: false,
-        description: `${label} granted through ox_inventory with ammo.`,
-        image: ox(item),
-        ox: { registered: true, grants: [grant(item, label)] },
-    });
+function emptyCatalog() {
     return {
-        vehicles: {
-            bronze: [car('veh_sultan', 'Karin Sultan', 250, 'sultan'), car('veh_buffalo', 'Bravado Buffalo', 300, 'buffalo'), car('veh_futo', 'Karin Futo', 220, 'futo'), car('veh_bati', 'Pegassi Bati 801', 280, 'bati')],
-            silver: [car('veh_elegy2', 'Annis Elegy RH8', 650, 'elegy2'), car('veh_jester', 'Dinka Jester', 700, 'jester'), car('veh_sultanrs', 'Karin Sultan RS', 800, 'sultanrs')],
-            gold: [car('veh_t20', 'Progen T20', 1800, 't20'), car('veh_zentorno', 'Pegassi Zentorno', 1750, 'zentorno'), car('veh_krieger', 'Benefactor Krieger', 2100, 'krieger')],
-        },
-        weapons: {
-            bronze: [gun('wep_pistol', 'Pistol', 150, 'WEAPON_PISTOL'), gun('wep_combatpistol', 'Combat Pistol', 180, 'WEAPON_COMBATPISTOL'), gun('wep_microsmg', 'Micro SMG', 220, 'WEAPON_MICROSMG')],
-            silver: [gun('wep_smg', 'SMG', 420, 'WEAPON_SMG'), gun('wep_carbinerifle', 'Carbine Rifle', 550, 'WEAPON_CARBINERIFLE')],
-            gold: [gun('wep_pistol50', 'Pistol .50', 900, 'WEAPON_PISTOL50'), gun('wep_combatmg', 'Combat MG', 1400, 'WEAPON_COMBATMG'), gun('wep_rpg', 'RPG', 2200, 'WEAPON_RPG')],
-        },
-        extras: [
-            { id: 'ext_armor_pack', label: 'Armor Crate', price: 120, description: 'Five heavy armor plates delivered to ox_inventory.', image: ox('armour'), ox: { registered: true, grants: [grant('armour', 'Armour', 5)] } },
-            { id: 'ext_med_pack', label: 'Field Medic Kit', price: 90, description: 'Bandages and medikits delivered through ox_inventory.', image: ox('bandage'), ox: { registered: true, grants: [grant('bandage', 'Bandage', 10), grant('medikit', 'Medikit', 4)] } },
-            { id: 'ext_starter_pack', label: 'Rebel Starter Pack', price: 350, unique: true, description: 'Armor, meds, lockpicks, and a pistol via ox_inventory.', image: ox('WEAPON_PISTOL'), ox: { registered: true, grants: [grant('armour', 'Armour', 3), grant('bandage', 'Bandage', 10), grant('lockpick', 'Lockpick', 4), grant('WEAPON_PISTOL', 'Pistol')] } },
-        ],
-        exclusives: [
-            { id: 'ex_nightshark', label: 'HVY Nightshark', price: 2600, unique: true, model: 'nightshark', image: 'https://docs.fivem.net/vehicles/nightshark.webp', description: 'Armored city exclusive. One per character.' },
-            { id: 'ex_penthouse', label: 'Penthouse Access Card', price: 2000, unique: true, description: 'City exclusive keycard for the Rebel penthouse.', image: ox('penthouse_card'), ox: { registered: true, grants: [grant('penthouse_card', 'Penthouse Access Card')] } },
-        ],
-        limited: [
-            { id: 'lim_summer_growler', label: 'Summer Growler', price: 900, model: 'growler', image: 'https://docs.fivem.net/vehicles/growler.webp', limitedActive: true, limitedUntil: '2026-09-15T23:59:59Z', remaining: 40, stock: 40, description: 'Seasonal sports wagon.' },
-            { id: 'lim_panther', label: 'Limited Panther', price: 1500, unique: true, petModel: 'a_c_panther', limitedActive: true, limitedUntil: '2026-09-30T23:59:59Z', remaining: 15, description: 'Rare companion panther.', image: ox('lim_panther'), ox: { registered: true, grants: [grant('lim_panther', 'Limited Panther')] } },
-        ],
-        pets: [
-            { id: 'pet_husky', label: 'Husky', price: 400, unique: true, petModel: 'a_c_husky', description: 'Loyal husky. Use the ox_inventory item to spawn it.', image: ox('pet_husky'), ox: { registered: true, grants: [grant('pet_husky', 'Husky')] } },
-            { id: 'pet_rottweiler', label: 'Rottweiler', price: 450, unique: true, petModel: 'a_c_rottweiler', description: 'Protective rottweiler companion.', image: ox('pet_rottweiler'), ox: { registered: true, grants: [grant('pet_rottweiler', 'Rottweiler')] } },
-            { id: 'pet_cat', label: 'Cat', price: 300, unique: true, petModel: 'a_c_cat_01', description: 'Street cat that decided you are its person.', image: ox('pet_cat'), ox: { registered: true, grants: [grant('pet_cat', 'Cat')] } },
-        ],
+        vehicles: { bronze: [], silver: [], gold: [] },
+        weapons: { bronze: [], silver: [], gold: [] },
+        extras: [],
+        exclusives: [],
+        limited: [],
+        pets: [],
     };
+}
+
+function putListing(catalog, item) {
+    const copy = { ...item };
+    if (item.category === 'vehicles') {
+        const tier = item.tier || 'bronze';
+        catalog.vehicles[tier] = catalog.vehicles[tier] || [];
+        catalog.vehicles[tier].push(copy);
+    } else if (item.category === 'weapons') {
+        const tier = item.tier || 'bronze';
+        catalog.weapons[tier] = catalog.weapons[tier] || [];
+        catalog.weapons[tier].push(copy);
+    } else if (catalog[item.category]) {
+        catalog[item.category].push(copy);
+    } else {
+        catalog.extras.push(copy);
+    }
+}
+
+function catalogFromListings(listings) {
+    const catalog = emptyCatalog();
+    (listings || []).forEach((item) => putListing(catalog, item));
+    return catalog;
+}
+
+function mockNormalizeListing(data) {
+    const category = data.category || 'extras';
+    const label = String(data.label || '').trim();
+    const price = Number(data.price);
+    if (!label) return { ok: false, message: 'Enter a display name.' };
+    if (!Number.isFinite(price) || price < 0) return { ok: false, message: 'Enter a valid price.' };
+    const itemName = String(data.itemName || data.item || '').trim();
+    const model = String(data.model || '').trim();
+    const petModel = String(data.petModel || '').trim();
+    if (category === 'vehicles' && !model) return { ok: false, message: 'Vehicle listings need a spawn name.' };
+    if ((category === 'weapons' || category === 'extras') && !itemName) return { ok: false, message: 'Enter the ox_inventory item name.' };
+    if (category === 'pets' && !petModel) return { ok: false, message: 'Pet listings need a ped model.' };
+    const id = data.editingId || data.id || `${category.slice(0, 3)}_${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+    const item = {
+        id,
+        category,
+        tier: data.tier || ((category === 'vehicles' || category === 'weapons') ? 'bronze' : undefined),
+        label,
+        description: data.description || '',
+        price,
+        image: data.image || '',
+        imageKey: data.imageKey || itemName || model || id,
+        item: itemName || undefined,
+        weapon: category === 'weapons' ? itemName : undefined,
+        model: model || undefined,
+        petModel: petModel || undefined,
+        ammo: data.ammo ? Number(data.ammo) : undefined,
+        unique: Boolean(data.unique),
+        stock: data.stock === '' || data.stock == null ? undefined : Number(data.stock),
+        limitedFrom: data.limitedFrom || undefined,
+        limitedUntil: data.limitedUntil || undefined,
+        garageId: data.garageId || undefined,
+        garageType: data.garageType || undefined,
+        count: Number(data.count || 1),
+        extras: itemName && category !== 'weapons' && category !== 'pets' && !model ? [{ item: itemName, count: Number(data.count || 1) }] : undefined,
+    };
+    if (item.extras) {
+        item.ox = { registered: true, grants: item.extras.map((g) => ({ name: g.item, label: g.item, count: g.count, image: item.image, registered: true })) };
+    } else if (item.item) {
+        item.ox = { registered: true, grants: [{ name: item.item, label: item.label, count: 1, image: item.image, registered: true }] };
+    }
+    return { ok: true, item };
 }
 
 function mockOpen() {
@@ -113,19 +132,12 @@ function mockOpen() {
             serverId: 1,
             identifier: 'license:preview',
             coins: 3510,
-            lifetimeSpent: 3510,
+            lifetimeSpent: 0,
             lifetimeGranted: 5000,
             isAdmin: true,
-            ox: { weight: 12400, maxWeight: 70000, slots: 50 },
-            owned: [
-                { id: 1, item_id: 'pet_husky', category: 'pets', label: 'Husky', active: 1, created_at: '2026-08-20 12:00:00' },
-                { id: 2, item_id: 'veh_sultan', category: 'vehicles', tier: 'bronze', label: 'Karin Sultan', active: 1, created_at: '2026-08-21 09:00:00' },
-            ],
-            history: [
-                { id: 11, label: 'Karin Sultan', category: 'vehicles', price: 250, created_at: '2026-08-21 09:00:00' },
-                { id: 12, label: 'Husky', category: 'pets', price: 400, created_at: '2026-08-20 12:00:00' },
-                { id: 13, label: 'Armor Crate', category: 'extras', price: 120, created_at: '2026-08-24 18:00:00' },
-            ],
+            ox: { weight: 0, maxWeight: 70000, slots: 50 },
+            owned: [],
+            history: [],
             series: [
                 { day: '2026-08-18', total: 0 },
                 { day: '2026-08-19', total: 0 },
@@ -136,7 +148,7 @@ function mockOpen() {
                 { day: '2026-08-24', total: 2860 },
             ],
         },
-        catalog: mockCatalog(),
+        catalog: emptyCatalog(),
         players: [
             { id: 1, name: 'MoodyNewt8638' },
             { id: 12, name: 'RebelGuest' },
@@ -146,13 +158,9 @@ function mockOpen() {
                 { id: 1, name: 'MoodyNewt8638', identifier: 'license:preview', coins: 3510 },
                 { id: 12, name: 'RebelGuest', identifier: 'license:guest', coins: 80 },
             ],
-            logs: [
-                { id: 1, actor_name: 'MoodyNewt8638', action: 'purchase', details: '{"item":"veh_sultan"}', created_at: '2026-08-21 09:00:00' },
-                { id: 2, actor_name: 'Admin', target_name: 'MoodyNewt8638', action: 'coins_give', details: '{"amount":5000}', created_at: '2026-08-18 10:00:00' },
-            ],
-            codes: [
-                { id: 1, code: 'REBEL100', coins: 100, max_uses: 50, uses: 12, expires_at: '2026-12-31 23:59:59' },
-            ],
+            logs: [],
+            codes: [],
+            listings: [],
         },
     };
 }
@@ -194,9 +202,19 @@ async function post(name, data = {}) {
             });
             return { ok: true, player: state.player, admin: state.admin };
         }
-        if (name === 'redeem') {
-            state.player.coins += 100;
-            return { ok: true, player: state.player, admin: state.admin };
+        if (name === 'adminSaveListing') {
+            const parsed = mockNormalizeListing(data);
+            if (!parsed.ok) return parsed;
+            const listings = (state.admin.listings || []).filter((row) => row.id !== parsed.item.id);
+            listings.unshift(parsed.item);
+            state.admin.listings = listings;
+            state.catalog = catalogFromListings(listings);
+            return { ok: true, catalog: state.catalog, admin: state.admin, player: state.player };
+        }
+        if (name === 'adminDeleteListing') {
+            state.admin.listings = (state.admin.listings || []).filter((row) => row.id !== data.itemId);
+            state.catalog = catalogFromListings(state.admin.listings);
+            return { ok: true, catalog: state.catalog, admin: state.admin, player: state.player };
         }
         return { ok: true, player: state.player, admin: state.admin, lookup: state.lookup };
     }
@@ -440,7 +458,7 @@ function renderVehicles() {
     return `
         <section class="panel">
             ${shopToolbar('Vehicles', 'Bronze, silver, and gold donor cars delivered to your garage.', tierPills('vehicles'))}
-            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No vehicles in this tier.</div>'}</div>
+            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No vehicles in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
 }
@@ -451,7 +469,7 @@ function renderWeapons() {
     return `
         <section class="panel">
             ${shopToolbar('Weapons', 'Three combat tiers. Unique and stock rules are enforced on purchase.', tierPills('weapons'))}
-            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No weapons in this tier.</div>'}</div>
+            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No weapons in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
 }
@@ -461,7 +479,7 @@ function renderSimpleShop(key, title, sub) {
     return `
         <section class="panel">
             ${shopToolbar(title, sub)}
-            <div class="grid">${list.map((item) => itemCard(item)).join('') || '<div class="empty">Nothing listed right now.</div>'}</div>
+            <div class="grid">${list.map((item) => itemCard(item)).join('') || '<div class="empty">Nothing listed yet. Admins add items from the Admin tab.</div>'}</div>
         </section>
     `;
 }
@@ -570,21 +588,222 @@ function renderInventory() {
     `;
 }
 
+function listingVal(id) {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    if (el.type === 'checkbox') return el.checked;
+    return el.value;
+}
+
+function readListingForm() {
+    return {
+        editingId: listingVal('listEditingId'),
+        id: listingVal('listId'),
+        category: listingVal('listCategory') || 'extras',
+        tier: listingVal('listTier'),
+        label: listingVal('listLabel'),
+        description: listingVal('listDescription'),
+        price: listingVal('listPrice'),
+        image: listingVal('listImage'),
+        itemName: listingVal('listItemName'),
+        count: listingVal('listCount'),
+        model: listingVal('listModel'),
+        garageId: listingVal('listGarageId'),
+        garageType: listingVal('listGarageType'),
+        ammo: listingVal('listAmmo'),
+        petModel: listingVal('listPetModel'),
+        unique: listingVal('listUnique'),
+        stock: listingVal('listStock'),
+        limitedFrom: listingVal('listLimitedFrom'),
+        limitedUntil: listingVal('listLimitedUntil'),
+    };
+}
+
+function toggleListingFields() {
+    const category = listingVal('listCategory') || 'extras';
+    document.querySelectorAll('[data-for]').forEach((el) => {
+        const allow = (el.dataset.for || '').split(/\s+/).filter(Boolean);
+        const show = allow.includes('all') || allow.includes(category);
+        el.classList.toggle('hidden-field', !show);
+    });
+    const preview = document.getElementById('listImagePreview');
+    const url = listingVal('listImage');
+    if (preview) {
+        if (url) {
+            preview.src = url;
+            preview.classList.remove('hidden-field');
+        } else {
+            preview.removeAttribute('src');
+            preview.classList.add('hidden-field');
+        }
+    }
+}
+
+function fillListingForm(item) {
+    const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = Boolean(value);
+        else el.value = value == null ? '' : value;
+    };
+    set('listEditingId', item?.id || '');
+    set('listId', item?.id || '');
+    set('listCategory', item?.category || 'extras');
+    set('listTier', item?.tier || 'bronze');
+    set('listLabel', item?.label || '');
+    set('listDescription', item?.description || '');
+    set('listPrice', item?.price ?? '');
+    set('listImage', item?.image || '');
+    set('listItemName', item?.item || item?.weapon || '');
+    set('listCount', item?.count || item?.extras?.[0]?.count || 1);
+    set('listModel', item?.model || '');
+    set('listGarageId', item?.garageId || '');
+    set('listGarageType', item?.garageType || 'car');
+    set('listAmmo', item?.ammo ?? '');
+    set('listPetModel', item?.petModel || '');
+    set('listUnique', item?.unique);
+    set('listStock', item?.stock ?? '');
+    set('listLimitedFrom', item?.limitedFrom || '');
+    set('listLimitedUntil', item?.limitedUntil || '');
+    const idInput = document.getElementById('listId');
+    if (idInput) idInput.disabled = Boolean(item?.id);
+    const heading = document.getElementById('listingFormTitle');
+    if (heading) heading.textContent = item?.id ? `Edit ${item.label}` : 'Add shop listing';
+    toggleListingFields();
+}
+
 function renderAdmin() {
     const players = state.admin?.players || [];
     const logs = state.admin?.logs || [];
     const codes = state.admin?.codes || [];
+    const listings = state.admin?.listings || [];
     const lookup = state.lookup;
     return `
         <section class="panel">
             <div class="panel-head">
                 <div>
                     <h2>Admin panel</h2>
-                    <div class="sub">Grant Rebel Coins, create codes, inspect players, and refund purchases.</div>
+                    <div class="sub">Add shop listings with an image link and ox_inventory item name, then grant Rebel Coins.</div>
                 </div>
                 <button class="btn ghost" id="adminRefresh">Refresh</button>
             </div>
-            <div class="admin-layout">
+            <h3 id="listingFormTitle">Add shop listing</h3>
+            <input type="hidden" id="listEditingId" />
+            <div class="form-grid listing-grid">
+                <div class="field" data-for="all">
+                    <label>Category</label>
+                    <select id="listCategory">
+                        <option value="vehicles">Vehicle</option>
+                        <option value="weapons">Weapon</option>
+                        <option value="extras" selected>Extra item</option>
+                        <option value="exclusives">City exclusive</option>
+                        <option value="limited">Limited time</option>
+                        <option value="pets">Pet</option>
+                    </select>
+                </div>
+                <div class="field" data-for="vehicles weapons">
+                    <label>Tier</label>
+                    <select id="listTier">
+                        <option value="bronze">Bronze</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                    </select>
+                </div>
+                <div class="field" data-for="all">
+                    <label>Display name</label>
+                    <input id="listLabel" placeholder="Karin Sultan" />
+                </div>
+                <div class="field" data-for="all">
+                    <label>Price (RC)</label>
+                    <input id="listPrice" type="number" min="0" placeholder="250" />
+                </div>
+                <div class="field full" data-for="all">
+                    <label>Image link</label>
+                    <div class="image-row">
+                        <input id="listImage" placeholder="https://r2.fivemanage.com/YOUR_TEAM_ID/sultan.webp" />
+                        <img id="listImagePreview" class="listing-preview hidden-field" alt="" />
+                    </div>
+                </div>
+                <div class="field" data-for="weapons extras exclusives limited pets">
+                    <label>ox_inventory item name</label>
+                    <input id="listItemName" placeholder="armour / WEAPON_PISTOL / pet_husky" />
+                </div>
+                <div class="field" data-for="extras exclusives limited">
+                    <label>Item count</label>
+                    <input id="listCount" type="number" min="1" value="1" />
+                </div>
+                <div class="field" data-for="vehicles exclusives limited">
+                    <label>Vehicle spawn name</label>
+                    <input id="listModel" placeholder="sultan" />
+                </div>
+                <div class="field" data-for="vehicles exclusives limited">
+                    <label>JG garage name</label>
+                    <input id="listGarageId" placeholder="legion" />
+                </div>
+                <div class="field" data-for="vehicles exclusives limited">
+                    <label>Garage type</label>
+                    <select id="listGarageType">
+                        <option value="car">Car</option>
+                        <option value="heli">Air / heli</option>
+                        <option value="boat">Boat</option>
+                    </select>
+                </div>
+                <div class="field" data-for="weapons">
+                    <label>Ammo</label>
+                    <input id="listAmmo" type="number" min="0" placeholder="60" />
+                </div>
+                <div class="field" data-for="pets limited exclusives">
+                    <label>Pet ped model</label>
+                    <input id="listPetModel" placeholder="a_c_husky" />
+                </div>
+                <div class="field" data-for="all">
+                    <label>Custom id (optional)</label>
+                    <input id="listId" placeholder="auto from name" />
+                </div>
+                <div class="field" data-for="all">
+                    <label>Stock (blank = unlimited)</label>
+                    <input id="listStock" type="number" min="0" placeholder="" />
+                </div>
+                <div class="field" data-for="limited">
+                    <label>Limited from (UTC)</label>
+                    <input id="listLimitedFrom" placeholder="2026-08-01T00:00:00Z" />
+                </div>
+                <div class="field" data-for="limited">
+                    <label>Limited until (UTC)</label>
+                    <input id="listLimitedUntil" placeholder="2026-09-15T23:59:59Z" />
+                </div>
+                <div class="field full" data-for="all">
+                    <label>Description</label>
+                    <textarea id="listDescription" rows="2" placeholder="Shown on the shop card."></textarea>
+                </div>
+                <div class="field" data-for="all">
+                    <label class="check-label"><input id="listUnique" type="checkbox" /> Unique (one per character)</label>
+                </div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+                <button class="btn primary" id="saveListing">Save listing</button>
+                <button class="btn ghost" id="clearListing">Clear form</button>
+            </div>
+            <h3 style="margin:18px 0 8px">Shop listings</h3>
+            <table class="table">
+                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>RC</th><th></th></tr></thead>
+                <tbody>
+                    ${listings.map((row) => `
+                        <tr>
+                            <td>${row.image ? `<img class="listing-thumb" src="${escapeHtml(row.image)}" alt="" />` : ''}</td>
+                            <td>${escapeHtml(row.label)}<div class="sub">${escapeHtml(row.id)}</div></td>
+                            <td>${escapeHtml(row.category)}${row.tier ? ` / ${escapeHtml(row.tier)}` : ''}</td>
+                            <td>${escapeHtml(row.item || row.weapon || row.model || row.petModel || '—')}</td>
+                            <td>${formatCoins(row.price)}</td>
+                            <td class="actions">
+                                <button class="btn ghost" data-edit-listing="${escapeHtml(row.id)}">Edit</button>
+                                <button class="btn ghost" data-delete-listing="${escapeHtml(row.id)}">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="6">No listings yet. Fill the form above to add your first item.</td></tr>'}
+                </tbody>
+            </table>
+            <div class="admin-layout" style="margin-top:18px">
                 <div>
                     <div class="form-grid">
                         <div class="field">
@@ -618,7 +837,7 @@ function renderAdmin() {
                         <div class="field"><label>Code</label><input id="codeName" placeholder="REBEL100" /></div>
                         <div class="field"><label>Coins</label><input id="codeCoins" type="number" value="100" /></div>
                         <div class="field"><label>Max uses</label><input id="codeUses" type="number" value="10" /></div>
-                        <div class="field"><label>Item id (optional)</label><input id="codeItem" placeholder="pet_husky" /></div>
+                        <div class="field"><label>Item id (optional)</label><input id="codeItem" placeholder="veh_sultan" /></div>
                     </div>
                     <div class="actions" style="margin-top:10px"><button class="btn primary" id="createCode">Create code</button></div>
                 </div>
@@ -627,7 +846,7 @@ function renderAdmin() {
                     <table class="table">
                         <thead><tr><th>Action</th><th>Actor</th><th>When</th></tr></thead>
                         <tbody>
-                            ${logs.map((row) => `<tr><td>${escapeHtml(row.action)}</td><td>${escapeHtml(row.actor_name || '')}</td><td>${formatDate(row.created_at)}</td></tr>`).join('')}
+                            ${logs.map((row) => `<tr><td>${escapeHtml(row.action)}</td><td>${escapeHtml(row.actor_name || '')}</td><td>${formatDate(row.created_at)}</td></tr>`).join('') || '<tr><td colspan="3">No logs.</td></tr>'}
                         </tbody>
                     </table>
                     <h3 style="margin:18px 0 8px">Codes</h3>
@@ -740,6 +959,34 @@ function renderContent() {
     root.querySelectorAll('[data-refund]').forEach((btn) => {
         btn.addEventListener('click', async () => handleResult(await post('adminRefund', { purchaseId: Number(btn.dataset.refund) }), 'Refunded.'));
     });
+
+    if (root.querySelector('#listCategory')) {
+        toggleListingFields();
+        root.querySelector('#listCategory').addEventListener('change', toggleListingFields);
+        const image = root.querySelector('#listImage');
+        if (image) image.addEventListener('input', toggleListingFields);
+        const saveListing = root.querySelector('#saveListing');
+        if (saveListing) {
+            saveListing.addEventListener('click', async () => {
+                handleResult(await post('adminSaveListing', readListingForm()), 'Shop listing saved.');
+            });
+        }
+        const clearListing = root.querySelector('#clearListing');
+        if (clearListing) {
+            clearListing.addEventListener('click', () => fillListingForm(null));
+        }
+        root.querySelectorAll('[data-edit-listing]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const item = (state.admin.listings || []).find((row) => row.id === btn.dataset.editListing);
+                if (item) fillListingForm(item);
+            });
+        });
+        root.querySelectorAll('[data-delete-listing]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                handleResult(await post('adminDeleteListing', { itemId: btn.dataset.deleteListing }), 'Shop listing removed.');
+            });
+        });
+    }
 }
 
 function handleResult(result, successMessage) {

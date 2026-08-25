@@ -6,6 +6,8 @@ Open with **F7** or `/donator`.
 
 ## Features
 
+- **In-game shop editor** — admins add vehicles, weapons, extras, exclusives, limited drops, and pets from the Admin tab (image link, display name, ox item name, price, and the rest)
+- **Empty catalog by default** — no built-in items; you add your own
 - **Vehicles** — bronze, silver, and gold tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
 - **Weapons & extras** — granted through **ox_inventory** (`CanCarryItem`, `AddItem`, `RemoveItem`)
 - **Images** — shop UI and inventory icons from **Fivemanage** CDN links (`metadata.imageurl`)
@@ -23,7 +25,7 @@ Open with **F7** or `/donator`.
 ## Install
 
 1. Drop this resource in `resources` as `dj-donator` (or keep the repo folder name and ensure it in `server.cfg`).
-2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses.
+2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses. If you already imported an older install, also run [`sql/listings.sql`](sql/listings.sql) (the resource also creates that table on start).
 3. Add to `server.cfg`:
 
 ```cfg
@@ -133,21 +135,29 @@ Admins are anyone with ACE `donator.admin`, ESX groups `admin` / `superadmin`, o
 | `/givecoinsid [identifier] [amount] [reason]` | Grant coins to an offline identifier |
 | `/coins` | Show your own balance |
 
-The **Admin** tab inside the store can do the same things, create redeem codes, inspect history, and refund purchases.
+The **Admin** tab inside the store is where you add shop items, grant coins, create redeem codes, inspect history, and refund purchases.
+
+### Add a shop listing in-game
+
+1. Open the store with **F7** as an admin and open **Admin**.
+2. Fill **Add shop listing**:
+   - **Category** — Vehicle, Weapon, Extra item, City exclusive, Limited time, or Pet
+   - **Display name** — card title
+   - **Price** — Rebel Coins
+   - **Image link** — full Fivemanage URL (`https://r2.fivemanage.com/.../sultan.webp`)
+   - **ox_inventory item name** — for weapons, extras, and pets (`armour`, `WEAPON_PISTOL`, `pet_husky`)
+   - **Vehicle spawn name** — for cars (`sultan`)
+   - **Item count**, **ammo**, **JG garage**, **pet model**, **unique**, **stock**, and limited dates as needed
+3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_donator_listings`.
+4. Use **Edit** / **Delete** on the listings table to change or remove it.
+
+Weapons and extras grant the ox_inventory item. Vehicles go into JG Advanced Garages. Pets grant an ox item whose name is the listing id (set Custom id to your ox item name).
+
+The default shop is empty on purpose so you only sell what you add.
 
 ## Catalog
 
-Edit [`shared/catalog.lua`](shared/catalog.lua). Each listing supports:
-
-- `price`, `label`, `description`, `image`, `imageKey`
-- `model` for vehicles
-- `garageId` / `garageType` for JG (`car`, `heli` → `air`, `boat` → `sea`)
-- `weapon` / `item` / `ammo` for weapons
-- `extras = { { item = 'bandage', count = 10 } }` for ox_inventory grants
-- `petModel` for companion peds
-- `unique = true` to block duplicate ownership
-- `stock = 25` for a global remaining count
-- `limitedFrom` / `limitedUntil` as ISO UTC timestamps (`2026-09-15T23:59:59Z`)
+Listings live in the database, not in Lua. [`shared/catalog.lua`](shared/catalog.lua) starts empty and is filled from `dj_donator_listings` when the resource starts.
 
 ## Discord webhooks
 
