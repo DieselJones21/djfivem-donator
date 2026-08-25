@@ -17,7 +17,7 @@
     --silver: #e8eef5;
     --gold: #f3c75b;
     --radius: 14px;
-    --shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 80px rgba(225, 6, 0, 0.18);
+    --shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 22px rgba(225, 6, 0, 0.22);
 }
 
 * {
@@ -79,7 +79,7 @@ textarea {
         radial-gradient(900px 280px at 12% -10%, rgba(225, 6, 0, 0.32), transparent 55%),
         radial-gradient(700px 320px at 100% 0%, rgba(255, 255, 255, 0.08), transparent 46%),
         linear-gradient(180deg, #221116 0%, #14090c 42%, #0c0608 100%);
-    border: 1px solid rgba(255, 90, 80, 0.28);
+    border: 1px solid rgba(255, 110, 90, 0.42);
     border-radius: 20px;
     box-shadow: var(--shadow);
     display: flex;
@@ -88,27 +88,14 @@ textarea {
     position: relative;
 }
 
-.shell::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(255, 80, 70, 0.9), rgba(255, 255, 255, 0.35) 36%, rgba(225, 6, 0, 0.15) 70%, rgba(255, 180, 80, 0.35));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-}
-
 .shell::after {
     content: '';
     position: absolute;
-    left: 10%;
-    right: 10%;
-    top: -40px;
-    height: 90px;
-    background: radial-gradient(ellipse at center, rgba(255, 50, 40, 0.45), transparent 70%);
+    left: 12%;
+    right: 12%;
+    top: -50px;
+    height: 110px;
+    background: radial-gradient(ellipse at center, rgba(255, 60, 50, 0.38), transparent 70%);
     pointer-events: none;
 }
 
