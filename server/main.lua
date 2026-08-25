@@ -70,7 +70,11 @@ local function publicItem(item)
         limitedUntilTs = untilTime,
         extras = item.extras,
         ammo = item.ammo,
+        garageId = item.garageId,
+        garageType = item.garageType,
     }
+    pub.image = Images.Resolve(item, pub.image)
+    pub.imageKey = item.imageKey or Images.Key(item)
     if OxInv and OxInv.Ready() then
         OxInv.DecoratePublic(pub, item)
     end
@@ -152,24 +156,12 @@ local function grantItem(targetSource, identifier, item)
     }
 
     if item.model then
-        if targetSource then
-            data.plate = Framework.GiveVehicle(targetSource, identifier, item)
-        elseif Framework.name == 'esx' then
-            local plate = ('RC%06d'):format(math.random(0, 999999))
-            MySQL.insert.await(
-                'INSERT INTO owned_vehicles (owner, plate, vehicle, type, stored) VALUES (?, ?, ?, ?, ?)',
-                { identifier, plate, json.encode({ model = joaat(item.model), plate = plate }), item.garageType or 'car', 1 }
-            )
-            data.plate = plate
-        elseif Framework.name == 'qb' or Framework.name == 'qbx' then
-            local plate = ('RC%06d'):format(math.random(0, 999999))
-            MySQL.insert.await(
-                'INSERT INTO player_vehicles (citizenid, vehicle, hash, mods, plate, garage, state) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                { identifier, item.model, joaat(item.model), json.encode({ model = joaat(item.model), plate = plate }), plate, Config.Garage.qb.garage, 1 }
-            )
-            data.plate = plate
-        else
+        if not targetSource and Framework.name == 'standalone' then
             data.pending = true
+        else
+            local plate, garageId = Framework.GiveVehicle(targetSource, identifier, item)
+            data.plate = plate
+            data.garageId = garageId
         end
     elseif item.weapon or item.extras or item.item or item.petModel then
         if targetSource then
@@ -310,6 +302,19 @@ local function resolveTarget(payload)
     end
 end
 
+local function adminBundle()
+    return {
+        players = onlinePlayers(),
+        logs = DB.GetLogs(40),
+        codes = DB.ListCodes(),
+        listings = Listings.EditorRows(),
+    }
+end
+
+local function listingError(err)
+    return Locale[err] or Locale.listing_invalid or 'Could not save that listing.'
+end
+
 RegisterDonatorCallback('open', function(source)
     local snap = playerSnapshot(source)
     if not snap then
@@ -318,9 +323,7 @@ RegisterDonatorCallback('open', function(source)
     local everyone = onlinePlayers()
     local admin = {}
     if snap.isAdmin then
-        admin.players = everyone
-        admin.logs = DB.GetLogs(40)
-        admin.codes = DB.ListCodes()
+        admin = adminBundle()
     end
     local giftPlayers = {}
     for i = 1, #everyone do
@@ -582,7 +585,7 @@ local function adminCoins(source, payload, mode)
         ok = true,
         player = snap,
         targetBalance = result.coins,
-        admin = source ~= 0 and Framework.IsAdmin(source) and { players = onlinePlayers(), logs = DB.GetLogs(40), codes = DB.ListCodes() } or nil,
+        admin = source ~= 0 and Framework.IsAdmin(source) and adminBundle() or nil,
     }
 end
 
@@ -604,7 +607,7 @@ RegisterDonatorCallback('adminRefresh', function(source)
     end
     return {
         ok = true,
-        admin = { players = onlinePlayers(), logs = DB.GetLogs(40), codes = DB.ListCodes() },
+        admin = adminBundle(),
         player = playerSnapshot(source),
     }
 end)
@@ -625,7 +628,7 @@ RegisterDonatorCallback('adminCreateCode', function(source, payload)
     DB.CreateCode(code, coins, itemId, maxUses, expiresAt, actorId)
     DB.InsertLog(actorId, actorName, nil, nil, 'create_code', { code = code, coins = coins })
     Webhooks.Admin(actorName, actorId, 'create_code', ('Created code %s (%s RC, %s uses)'):format(code, coins, maxUses))
-    return { ok = true, admin = { players = onlinePlayers(), logs = DB.GetLogs(40), codes = DB.ListCodes() } }
+    return { ok = true, admin = adminBundle() }
 end)
 
 RegisterDonatorCallback('adminLookup', function(source, payload)
@@ -680,7 +683,54 @@ RegisterDonatorCallback('adminRefund', function(source, payload)
         Framework.Notify(target, Locale.refunded, 'inform')
         TriggerClientEvent('dj-donator:client:coinsUpdated', target, DB.GetCoins(purchase.identifier).coins)
     end
-    return { ok = true, admin = { players = onlinePlayers(), logs = DB.GetLogs(40), codes = DB.ListCodes() } }
+    return { ok = true, admin = adminBundle() }
+end)
+
+RegisterDonatorCallback('adminSaveListing', function(source, payload)
+    if not Framework.IsAdmin(source) then
+        return { ok = false, error = 'no_permission', message = Locale.no_permission }
+    end
+    payload = payload or {}
+    local existingId = payload.editingId and payload.editingId ~= '' and payload.editingId or nil
+    local item, err = Listings.Save(payload, existingId)
+    if not item then
+        return { ok = false, error = err, message = listingError(err) }
+    end
+    local actorId, actorName = Framework.GetIdentifier(source)
+    DB.InsertLog(actorId, actorName, nil, nil, existingId and 'edit_listing' or 'add_listing', {
+        id = item.id,
+        label = item.label,
+        category = item.category,
+        price = item.price,
+    })
+    Webhooks.Admin(actorName, actorId, existingId and 'edit_listing' or 'add_listing', ('%s (%s) for %s RC'):format(item.label, item.id, item.price))
+    return {
+        ok = true,
+        catalog = publicCatalog(),
+        admin = adminBundle(),
+        player = playerSnapshot(source),
+    }
+end)
+
+RegisterDonatorCallback('adminDeleteListing', function(source, payload)
+    if not Framework.IsAdmin(source) then
+        return { ok = false, error = 'no_permission', message = Locale.no_permission }
+    end
+    local itemId = payload and payload.itemId
+    local existing = GetCatalogItem(itemId)
+    if not existing then
+        return { ok = false, error = 'invalid', message = 'Listing not found.' }
+    end
+    Listings.Delete(itemId)
+    local actorId, actorName = Framework.GetIdentifier(source)
+    DB.InsertLog(actorId, actorName, nil, nil, 'delete_listing', { id = itemId, label = existing.label })
+    Webhooks.Admin(actorName, actorId, 'delete_listing', ('Removed %s (`%s`)'):format(existing.label, itemId))
+    return {
+        ok = true,
+        catalog = publicCatalog(),
+        admin = adminBundle(),
+        player = playerSnapshot(source),
+    }
 end)
 
 local function commandTarget(src, idArg)
@@ -830,5 +880,9 @@ CreateThread(function()
     if not ok then
         print('[dj-donator] WARNING: SQL tables are missing. Import sql/install.sql')
         Webhooks.Error('Database missing', 'Import sql/install.sql before using dj-donator.')
+    else
+        DB.EnsureListingsTable()
+        Listings.Rebuild()
+        print(('[dj-donator] Shop listings loaded: %s'):format(#CatalogAll()))
     end
 end)

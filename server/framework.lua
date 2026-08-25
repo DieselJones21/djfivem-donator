@@ -240,6 +240,9 @@ end
 
 function Framework.GiveVehicle(source, identifier, item)
     local plate = randomPlate()
+    if JGGarage and JGGarage.Ready() then
+        return JGGarage.Give(source, identifier, item, plate)
+    end
     local model = item.model
     local props = json.encode({
         model = joaat(model),
@@ -256,7 +259,7 @@ function Framework.GiveVehicle(source, identifier, item)
         return plate
     elseif Framework.name == 'qb' or Framework.name == 'qbx' then
         local license = identifier
-        if GetPlayerIdentifierByType then
+        if source and GetPlayerIdentifierByType then
             license = GetPlayerIdentifierByType(source, 'license') or identifier
         end
         local garage = Config.Garage.qb.garage
@@ -266,7 +269,9 @@ function Framework.GiveVehicle(source, identifier, item)
         )
         return plate
     else
-        TriggerClientEvent('dj-donator:client:spawnVehicle', source, model, plate)
+        if source then
+            TriggerClientEvent('dj-donator:client:spawnVehicle', source, model, plate)
+        end
         return plate
     end
 end

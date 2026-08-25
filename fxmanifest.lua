@@ -4,12 +4,13 @@ lua54 'yes'
 
 name 'dj-donator'
 author 'DieselJones21'
-description 'Rebel Coins donator store with vehicles, weapons, pets, exclusives, and admin tools'
-version '1.0.0'
+description 'Rebel Coins donator store with in-game listing editor, Fivemanage images, ox_inventory, and JG garages'
+version '1.2.0'
 
 shared_scripts {
     'config.lua',
     'shared/locale.lua',
+    'shared/images.lua',
     'shared/catalog.lua',
 }
 
@@ -24,8 +25,10 @@ server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/framework.lua',
     'server/oxinventory.lua',
+    'server/jggarages.lua',
     'server/webhooks.lua',
     'server/database.lua',
+    'server/listings.lua',
     'server/callbacks.lua',
     'server/main.lua',
 }

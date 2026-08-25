@@ -2,7 +2,7 @@ Config = {}
 
 -- Menu
 Config.Command = 'donator'
-Config.Keybind = 'F7'
+Config.Keybind = 'F11'
 Config.KeybindDescription = 'Open Rebel Donator Store'
 Config.CloseKey = 'Escape'
 
@@ -26,13 +26,58 @@ Config.Inventory = 'ox'
 
 Config.OxInventory = {
     resource = 'ox_inventory',
-    -- Reads inventory:imagepath convar at runtime; this is the default.
+    -- Fallback when a Fivemanage URL is not set for an item.
     imagePath = 'nui://ox_inventory/web/images',
     requireCanCarry = true,
     refundIfAddFails = true,
 }
 
--- Garage table mapping used when granting vehicles
+--[[
+    Fivemanage CDN images for the shop UI and ox_inventory metadata.imageurl.
+
+    1. Upload PNGs/WebPs in the Fivemanage dashboard (vehicles, weapons, extras, pets).
+    2. Paste the folder URL below (everything before the filename).
+    3. Name files after the spawn/item key: sultan.webp, weapon_pistol.webp, pet_husky.webp
+    4. ox_inventory already allows r2.fivemanage.com and i.fmfile.com in inventory:validhosts.
+
+    You can also paste a full URL on any catalog row as `image = 'https://r2.fivemanage.com/...'`
+    or map keys in Config.Images.urls.
+]]
+Config.Images = {
+    provider = 'fivemanage',
+    baseUrl = '', -- e.g. https://r2.fivemanage.com/YOUR_TEAM_ID
+    extension = 'webp',
+    urls = {
+        -- sultan = 'https://r2.fivemanage.com/YOUR_TEAM_ID/sultan.webp',
+        -- WEAPON_PISTOL = 'https://r2.fivemanage.com/YOUR_TEAM_ID/weapon_pistol.webp',
+        -- pet_husky = 'https://r2.fivemanage.com/YOUR_TEAM_ID/pet_husky.webp',
+    },
+}
+
+-- JG Advanced Garages: purchased vehicles are stored in this garage (in_garage = 1)
+Config.JGGarages = {
+    resource = 'jg-advancedgarages',
+    -- Must match a garage `name` from jg-advancedgarages (getAllGarages). Example: legion
+    defaultGarage = 'legion',
+    -- Leave air/sea blank to auto-pick the first public garage of that type.
+    defaultGarages = {
+        car = 'legion',
+        air = '',
+        sea = '',
+    },
+    types = {
+        car = 'car',
+        heli = 'air',
+        boat = 'sea',
+        sea = 'sea',
+        air = 'air',
+    },
+    fuel = 100,
+    engine = 1000,
+    body = 1000,
+}
+
+-- Fallback garage insert when jg-advancedgarages is not started
 Config.Garage = {
     esx = {
         table = 'owned_vehicles',

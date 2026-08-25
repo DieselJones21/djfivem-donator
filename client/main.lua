@@ -93,6 +93,14 @@ RegisterNUICallback('adminRefund', function(data, cb)
     cb(DonatorCallback('adminRefund', data) or { ok = false })
 end)
 
+RegisterNUICallback('adminSaveListing', function(data, cb)
+    cb(DonatorCallback('adminSaveListing', data) or { ok = false })
+end)
+
+RegisterNUICallback('adminDeleteListing', function(data, cb)
+    cb(DonatorCallback('adminDeleteListing', data) or { ok = false })
+end)
+
 RegisterNetEvent('dj-donator:client:notify', function(message, nType)
     BeginTextCommandThefeedPost('STRING')
     AddTextComponentSubstringPlayerName(message)

@@ -155,3 +155,97 @@ function DB.DeactivateOwned(identifier, itemId)
         { identifier, itemId }
     )
 end
+
+function DB.EnsureListingsTable()
+    MySQL.query.await([[
+        CREATE TABLE IF NOT EXISTS `dj_donator_listings` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `item_id` VARCHAR(64) NOT NULL,
+            `category` VARCHAR(32) NOT NULL,
+            `tier` VARCHAR(16) DEFAULT NULL,
+            `label` VARCHAR(128) NOT NULL,
+            `description` TEXT,
+            `price` INT NOT NULL DEFAULT 0,
+            `image` VARCHAR(512) DEFAULT NULL,
+            `image_key` VARCHAR(64) DEFAULT NULL,
+            `item_name` VARCHAR(64) DEFAULT NULL,
+            `weapon` VARCHAR(64) DEFAULT NULL,
+            `model` VARCHAR(64) DEFAULT NULL,
+            `pet_model` VARCHAR(64) DEFAULT NULL,
+            `ammo` INT DEFAULT NULL,
+            `item_count` INT NOT NULL DEFAULT 1,
+            `extras` LONGTEXT,
+            `unique_item` TINYINT(1) NOT NULL DEFAULT 0,
+            `stock` INT DEFAULT NULL,
+            `limited_from` VARCHAR(32) DEFAULT NULL,
+            `limited_until` VARCHAR(32) DEFAULT NULL,
+            `garage_id` VARCHAR(64) DEFAULT NULL,
+            `garage_type` VARCHAR(16) DEFAULT NULL,
+            `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `item_id` (`item_id`),
+            KEY `category` (`category`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ]])
+end
+
+function DB.GetListings()
+    return MySQL.query.await('SELECT * FROM dj_donator_listings ORDER BY category ASC, tier ASC, id ASC') or {}
+end
+
+function DB.UpsertListing(item, count)
+    local extras = item.extras and json.encode(item.extras) or nil
+    MySQL.query.await([[
+        INSERT INTO dj_donator_listings
+            (item_id, category, tier, label, description, price, image, image_key, item_name, weapon, model, pet_model, ammo, item_count, extras, unique_item, stock, limited_from, limited_until, garage_id, garage_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            category = VALUES(category),
+            tier = VALUES(tier),
+            label = VALUES(label),
+            description = VALUES(description),
+            price = VALUES(price),
+            image = VALUES(image),
+            image_key = VALUES(image_key),
+            item_name = VALUES(item_name),
+            weapon = VALUES(weapon),
+            model = VALUES(model),
+            pet_model = VALUES(pet_model),
+            ammo = VALUES(ammo),
+            item_count = VALUES(item_count),
+            extras = VALUES(extras),
+            unique_item = VALUES(unique_item),
+            stock = VALUES(stock),
+            limited_from = VALUES(limited_from),
+            limited_until = VALUES(limited_until),
+            garage_id = VALUES(garage_id),
+            garage_type = VALUES(garage_type)
+    ]], {
+        item.id,
+        item.category,
+        item.tier,
+        item.label,
+        item.description,
+        item.price,
+        item.image,
+        item.imageKey,
+        item.item,
+        item.weapon,
+        item.model,
+        item.petModel,
+        item.ammo,
+        count or (item.extras and item.extras[1] and item.extras[1].count) or 1,
+        extras,
+        item.unique and 1 or 0,
+        item.stock,
+        item.limitedFrom,
+        item.limitedUntil,
+        item.garageId,
+        item.garageType,
+    })
+end
+
+function DB.DeleteListing(itemId)
+    MySQL.update.await('DELETE FROM dj_donator_listings WHERE item_id = ?', { itemId })
+end
