@@ -619,11 +619,20 @@ function listingVal(id) {
 function bundleRowHtml(row = {}) {
     return `
         <div class="bundle-row">
-            <input class="bundle-item" placeholder="armour" value="${escapeHtml(row.item || '')}" />
-            <input class="bundle-count" type="number" min="1" value="${escapeHtml(row.count || 1)}" />
+            <input class="bundle-item" name="bundleItem" placeholder="ox item name" value="${escapeHtml(row.item || '')}" />
+            <input class="bundle-count" name="bundleCount" type="number" min="1" value="${escapeHtml(row.count || 1)}" />
             <button type="button" class="btn ghost bundle-remove">Remove</button>
         </div>
     `;
+}
+
+function collectBundleItems() {
+    const wrap = document.getElementById('bundleRows');
+    if (!wrap) return [];
+    return Array.from(wrap.querySelectorAll('.bundle-row')).map((row) => ({
+        item: String(row.querySelector('.bundle-item')?.value || '').trim(),
+        count: Math.max(1, Number(row.querySelector('.bundle-count')?.value) || 1),
+    })).filter((row) => row.item);
 }
 
 function fillBundleRows(extras) {
@@ -631,13 +640,6 @@ function fillBundleRows(extras) {
     if (!wrap) return;
     const rows = extras && extras.length ? extras : [{ item: '', count: 1 }, { item: '', count: 1 }];
     wrap.innerHTML = rows.map((row) => bundleRowHtml(row)).join('');
-}
-
-function collectBundleItems() {
-    return Array.from(document.querySelectorAll('#bundleRows .bundle-row')).map((row) => ({
-        item: (row.querySelector('.bundle-item')?.value || '').trim(),
-        count: Math.max(1, Number(row.querySelector('.bundle-count')?.value) || 1),
-    })).filter((row) => row.item);
 }
 
 function listingContents(row) {
@@ -792,6 +794,7 @@ function renderAdmin() {
                 </div>
                 <div class="field full" data-for="bundles">
                     <label>Bundle items (ox_inventory name + count)</label>
+                    <div class="bundle-head"><span>Item name</span><span>Qty</span><span></span></div>
                     <div id="bundleRows" class="bundle-rows">
                         ${bundleRowHtml({ item: '', count: 1 })}
                         ${bundleRowHtml({ item: '', count: 1 })}

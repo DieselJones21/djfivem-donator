@@ -686,11 +686,19 @@ textarea {
     gap: 8px;
 }
 
+.bundle-head,
 .bundle-row {
     display: grid;
     grid-template-columns: 1fr 90px auto;
     gap: 8px;
     align-items: center;
+}
+
+.bundle-head {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 0 2px;
 }
 
 .bundle-row input {

@@ -77,7 +77,12 @@ local function parseExtras(payload)
             extras[#extras + 1] = { item = name, count = count }
         end
     end
-    if #raw > 0 then
+    -- JSON arrays are 1-based; some NUI payloads keep a 0 index.
+    if raw[0] ~= nil then
+        for i = 0, #raw do
+            push(raw[i])
+        end
+    elseif #raw > 0 then
         for i = 1, #raw do
             push(raw[i])
         end
