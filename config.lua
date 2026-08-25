@@ -2,7 +2,7 @@ Config = {}
 
 -- Menu
 Config.Command = 'donator'
-Config.Keybind = 'F7'
+Config.Keybind = 'F11'
 Config.KeybindDescription = 'Open Rebel Donator Store'
 Config.CloseKey = 'Escape'
 

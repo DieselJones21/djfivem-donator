@@ -38,7 +38,7 @@ const state = {
     players: [],
     currency: { name: 'Rebel Coins', short: 'RC' },
     serverName: 'Rebel RP',
-    keybind: 'F7',
+    keybind: 'F11',
     locale: {},
 };
 
@@ -124,7 +124,7 @@ function mockOpen() {
     return {
         ok: true,
         serverName: 'Rebel RP',
-        keybind: 'F7',
+        keybind: 'F11',
         currency: { name: 'Rebel Coins', short: 'RC' },
         locale: {},
         player: {

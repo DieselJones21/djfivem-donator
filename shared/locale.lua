@@ -1,7 +1,7 @@
 Locale = {
     menu_title = 'Rebel Donator',
     currency = 'Rebel Coins',
-    open_hint = 'F7 (Minimize Menu)',
+    open_hint = 'F11 (Minimize Menu)',
     not_enough = 'You do not have enough Rebel Coins.',
     purchased = 'Purchase complete.',
     gifted = 'Gift sent.',

@@ -2,7 +2,7 @@
 
 FiveM donator store with a **Rebel Coins** currency, a red / white / black dashboard UI, oxmysql persistence, and Discord webhook logs for every purchase and admin action.
 
-Open with **F7** or `/donator`.
+Open with **F11** or `/donator`.
 
 ## Features
 
@@ -107,7 +107,7 @@ Merge [`install/ox_inventory_items.lua`](install/ox_inventory_items.lua) into `o
 - `donator_plate`, `penthouse_card`, `repairkit`
 - Pet items with `client.export = 'dj-donator.usePet'`
 
-Players open the store with **F7** or `/donator`. `/coins` prints the current Rebel Coin balance.
+Players open the store with **F11** or `/donator`. `/coins` prints the current Rebel Coin balance.
 
 ## JG Advanced Garages
 
@@ -139,7 +139,7 @@ The **Admin** tab inside the store is where you add shop items, grant coins, cre
 
 ### Add a shop listing in-game
 
-1. Open the store with **F7** as an admin and open **Admin**.
+1. Open the store with **F11** as an admin and open **Admin**.
 2. Fill **Add shop listing**:
    - **Category** — Vehicle, Weapon, Extra item, City exclusive, Limited time, or Pet
    - **Display name** — card title
