@@ -4,18 +4,20 @@ local PREFIX = {
     vehicles = 'veh',
     weapons = 'wep',
     extras = 'ext',
+    bundles = 'bdl',
+    pets = 'pet',
     exclusives = 'ex',
     limited = 'lim',
-    pets = 'pet',
 }
 
 local CATEGORIES = {
     vehicles = true,
     weapons = true,
     extras = true,
+    bundles = true,
+    pets = true,
     exclusives = true,
     limited = true,
-    pets = true,
 }
 
 local TIERS = {
@@ -49,6 +51,47 @@ local function toInt(value, fallback)
         return fallback
     end
     return math.floor(n)
+end
+
+local function parseExtras(payload)
+    local raw = payload and (payload.bundleItems or payload.extras)
+    if type(raw) == 'string' and raw ~= '' then
+        local ok, decoded = pcall(json.decode, raw)
+        if ok then
+            raw = decoded
+        else
+            return {}
+        end
+    end
+    if type(raw) ~= 'table' then
+        return {}
+    end
+    local extras = {}
+    local function push(row)
+        if type(row) ~= 'table' then
+            return
+        end
+        local name = trim(row.item or row.name or '')
+        local count = math.max(1, toInt(row.count, 1))
+        if name ~= '' then
+            extras[#extras + 1] = { item = name, count = count }
+        end
+    end
+    -- JSON arrays are 1-based; some NUI payloads keep a 0 index.
+    if raw[0] ~= nil then
+        for i = 0, #raw do
+            push(raw[i])
+        end
+    elseif #raw > 0 then
+        for i = 1, #raw do
+            push(raw[i])
+        end
+    else
+        for _, row in pairs(raw) do
+            push(row)
+        end
+    end
+    return extras
 end
 
 local function uniqueId(category, label, requested)
@@ -102,6 +145,8 @@ function Listings.Normalize(payload, existingId)
         tier = 'bronze'
     end
 
+    local extras = parseExtras(payload)
+
     if category == 'vehicles' and model == '' then
         return nil, 'missing_model'
     end
@@ -110,6 +155,9 @@ function Listings.Normalize(payload, existingId)
     end
     if category == 'extras' and itemName == '' then
         return nil, 'missing_item'
+    end
+    if category == 'bundles' and #extras < 2 then
+        return nil, 'missing_bundle'
     end
     if category == 'pets' and petModel == '' then
         return nil, 'missing_pet'
@@ -157,21 +205,28 @@ function Listings.Normalize(payload, existingId)
         end
     end
 
-    if category == 'weapons' or (itemName ~= '' and itemName:upper():find('^WEAPON_')) then
-        item.weapon = itemName:upper()
-        item.item = item.weapon
-        item.ammo = ammo
-        if not item.imageKey then
-            item.imageKey = item.item
-        end
-    elseif itemName ~= '' then
-        item.item = itemName
-        if not item.imageKey then
-            item.imageKey = itemName
+    if category ~= 'bundles' then
+        if category == 'weapons' or (itemName ~= '' and itemName:upper():find('^WEAPON_')) then
+            item.weapon = itemName:upper()
+            item.item = item.weapon
+            item.ammo = ammo
+            if not item.imageKey then
+                item.imageKey = item.item
+            end
+        elseif itemName ~= '' then
+            item.item = itemName
+            if not item.imageKey then
+                item.imageKey = itemName
+            end
         end
     end
 
-    if category == 'extras' or (item.item and not item.model and not item.weapon and category ~= 'pets') then
+    if category == 'bundles' then
+        item.extras = extras
+        if extras[1] and not item.imageKey then
+            item.imageKey = extras[1].item
+        end
+    elseif category == 'extras' or (item.item and not item.model and not item.weapon and category ~= 'pets') then
         item.extras = {
             { item = item.item or itemName, count = count },
         }

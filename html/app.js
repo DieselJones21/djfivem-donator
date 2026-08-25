@@ -6,9 +6,10 @@ const ICONS = {
     vehicles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-5h14l2 5M5 16h14M7 16v3M17 16v3M4 13h16"/></svg>',
     weapons: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h10l8-3M7 12v6M11 12v4"/></svg>',
     extras: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M12 8v8"/></svg>',
+    bundles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>',
+    pets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="8" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="8" r="2"/><path d="M6 14c1.5-2 10.5-2 12 0M8 18c2 2 6 2 8 0"/></svg>',
     exclusives: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"/></svg>',
     limited: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg>',
-    pets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="8" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="8" r="2"/><path d="M6 14c1.5-2 10.5-2 12 0M8 18c2 2 6 2 8 0"/></svg>',
     inventory: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg>',
     admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z"/></svg>',
 };
@@ -18,9 +19,10 @@ const TABS = [
     { id: 'vehicles', label: 'Vehicles' },
     { id: 'weapons', label: 'Weapons' },
     { id: 'extras', label: 'Extra Items' },
+    { id: 'bundles', label: 'Bundles' },
+    { id: 'pets', label: 'Pets' },
     { id: 'exclusives', label: 'City Exclusives' },
     { id: 'limited', label: 'Limited Time' },
-    { id: 'pets', label: 'Pets' },
     { id: 'inventory', label: 'Inventory' },
     { id: 'admin', label: 'Admin', admin: true },
 ];
@@ -47,9 +49,10 @@ function emptyCatalog() {
         vehicles: { bronze: [], silver: [], gold: [] },
         weapons: { bronze: [], silver: [], gold: [] },
         extras: [],
+        bundles: [],
+        pets: [],
         exclusives: [],
         limited: [],
-        pets: [],
     };
 }
 
@@ -85,10 +88,17 @@ function mockNormalizeListing(data) {
     const itemName = String(data.itemName || data.item || '').trim();
     const model = String(data.model || '').trim();
     const petModel = String(data.petModel || '').trim();
+    const bundleItems = (Array.isArray(data.bundleItems) ? data.bundleItems : [])
+        .map((row) => ({ item: String(row.item || '').trim(), count: Math.max(1, Number(row.count) || 1) }))
+        .filter((row) => row.item);
     if (category === 'vehicles' && !model) return { ok: false, message: 'Vehicle listings need a spawn name.' };
     if ((category === 'weapons' || category === 'extras') && !itemName) return { ok: false, message: 'Enter the ox_inventory item name.' };
+    if (category === 'bundles' && bundleItems.length < 2) return { ok: false, message: 'Add at least two ox_inventory items to the bundle.' };
     if (category === 'pets' && !petModel) return { ok: false, message: 'Pet listings need a ped model.' };
     const id = data.editingId || data.id || `${category.slice(0, 3)}_${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+    const extras = category === 'bundles'
+        ? bundleItems
+        : (itemName && category !== 'weapons' && category !== 'pets' && !model ? [{ item: itemName, count: Number(data.count || 1) }] : undefined);
     const item = {
         id,
         category,
@@ -97,8 +107,8 @@ function mockNormalizeListing(data) {
         description: data.description || '',
         price,
         image: data.image || '',
-        imageKey: data.imageKey || itemName || model || id,
-        item: itemName || undefined,
+        imageKey: data.imageKey || (category === 'bundles' ? (bundleItems[0]?.item || id) : (itemName || model || id)),
+        item: category === 'bundles' ? undefined : (itemName || undefined),
         weapon: category === 'weapons' ? itemName : undefined,
         model: model || undefined,
         petModel: petModel || undefined,
@@ -110,7 +120,7 @@ function mockNormalizeListing(data) {
         garageId: data.garageId || undefined,
         garageType: data.garageType || undefined,
         count: Number(data.count || 1),
-        extras: itemName && category !== 'weapons' && category !== 'pets' && !model ? [{ item: itemName, count: Number(data.count || 1) }] : undefined,
+        extras,
     };
     if (item.extras) {
         item.ox = { registered: true, grants: item.extras.map((g) => ({ name: g.item, label: g.item, count: g.count, image: item.image, registered: true })) };
@@ -273,7 +283,7 @@ function findItem(itemId) {
         (cat.vehicles?.[tier] || []).forEach((i) => buckets.push({ ...i, category: 'vehicles', tier }));
         (cat.weapons?.[tier] || []).forEach((i) => buckets.push({ ...i, category: 'weapons', tier }));
     });
-    ['extras', 'exclusives', 'limited', 'pets'].forEach((key) => {
+    ['extras', 'bundles', 'pets', 'exclusives', 'limited'].forEach((key) => {
         (cat[key] || []).forEach((i) => buckets.push({ ...i, category: key }));
     });
     return buckets.find((i) => i.id === itemId);
@@ -397,7 +407,7 @@ function itemCard(item, extra = {}) {
     return `
         <article class="card">
             <div class="media">
-                ${tier ? `<div class="tierchip ${tier}">${tier}</div>` : (item.limitedUntil ? '<div class="tierchip limited">LIMITED</div>' : '')}
+                ${tier ? `<div class="tierchip ${tier}">${tier}</div>` : (item.category === 'bundles' ? '<div class="tierchip bundle">BUNDLE</div>' : (item.limitedUntil ? '<div class="tierchip limited">LIMITED</div>' : ''))}
                 ${img}
             </div>
             <div class="body">
@@ -449,7 +459,11 @@ function tierPills(kind) {
 function filterList(list) {
     const q = state.search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter((item) => `${item.label} ${item.description || ''}`.toLowerCase().includes(q));
+    return list.filter((item) => {
+        const extras = (item.extras || []).map((row) => `${row.item || ''} ${row.name || ''}`).join(' ');
+        const grants = (item.ox?.grants || []).map((row) => `${row.label || ''} ${row.name || ''}`).join(' ');
+        return `${item.label} ${item.description || ''} ${extras} ${grants}`.toLowerCase().includes(q);
+    });
 }
 
 function renderVehicles() {
@@ -602,11 +616,46 @@ function listingVal(id) {
     return el.value;
 }
 
+function bundleRowHtml(row = {}) {
+    return `
+        <div class="bundle-row">
+            <input class="bundle-item" name="bundleItem" placeholder="ox item name" value="${escapeHtml(row.item || '')}" />
+            <input class="bundle-count" name="bundleCount" type="number" min="1" value="${escapeHtml(row.count || 1)}" />
+            <button type="button" class="btn ghost bundle-remove">Remove</button>
+        </div>
+    `;
+}
+
+function collectBundleItems() {
+    const wrap = document.getElementById('bundleRows');
+    if (!wrap) return [];
+    return Array.from(wrap.querySelectorAll('.bundle-row')).map((row) => ({
+        item: String(row.querySelector('.bundle-item')?.value || '').trim(),
+        count: Math.max(1, Number(row.querySelector('.bundle-count')?.value) || 1),
+    })).filter((row) => row.item);
+}
+
+function fillBundleRows(extras) {
+    const wrap = document.getElementById('bundleRows');
+    if (!wrap) return;
+    const rows = extras && extras.length ? extras : [{ item: '', count: 1 }, { item: '', count: 1 }];
+    wrap.innerHTML = rows.map((row) => bundleRowHtml(row)).join('');
+}
+
+function listingContents(row) {
+    if (row.category === 'bundles' && row.extras?.length) {
+        return row.extras.map((item) => `${item.item} x${item.count || 1}`).join(', ');
+    }
+    return row.item || row.weapon || row.model || row.petModel || '—';
+}
+
 function readListingForm() {
+    const category = listingVal('listCategory') || 'extras';
+    const bundleItems = category === 'bundles' ? collectBundleItems() : undefined;
     return {
         editingId: listingVal('listEditingId'),
         id: listingVal('listId'),
-        category: listingVal('listCategory') || 'extras',
+        category,
         tier: listingVal('listTier'),
         label: listingVal('listLabel'),
         description: listingVal('listDescription'),
@@ -614,6 +663,8 @@ function readListingForm() {
         image: listingVal('listImage'),
         itemName: listingVal('listItemName'),
         count: listingVal('listCount'),
+        bundleItems,
+        extras: bundleItems,
         model: listingVal('listModel'),
         garageId: listingVal('listGarageId'),
         garageType: listingVal('listGarageType'),
@@ -676,6 +727,7 @@ function fillListingForm(item) {
     if (idInput) idInput.disabled = Boolean(item?.id);
     const heading = document.getElementById('listingFormTitle');
     if (heading) heading.textContent = item?.id ? `Edit ${item.label}` : 'Add shop listing';
+    fillBundleRows(item?.extras);
     toggleListingFields();
 }
 
@@ -703,9 +755,10 @@ function renderAdmin() {
                         <option value="vehicles">Vehicle</option>
                         <option value="weapons">Weapon</option>
                         <option value="extras" selected>Extra item</option>
+                        <option value="bundles">Bundle</option>
+                        <option value="pets">Pet</option>
                         <option value="exclusives">City exclusive</option>
                         <option value="limited">Limited time</option>
-                        <option value="pets">Pet</option>
                     </select>
                 </div>
                 <div class="field" data-for="vehicles weapons">
@@ -738,6 +791,16 @@ function renderAdmin() {
                 <div class="field" data-for="extras exclusives limited">
                     <label>Item count</label>
                     <input id="listCount" type="number" min="1" value="1" />
+                </div>
+                <div class="field full" data-for="bundles">
+                    <label>Bundle items (ox_inventory name + count)</label>
+                    <div class="bundle-head"><span>Item name</span><span>Qty</span><span></span></div>
+                    <div id="bundleRows" class="bundle-rows">
+                        ${bundleRowHtml({ item: '', count: 1 })}
+                        ${bundleRowHtml({ item: '', count: 1 })}
+                    </div>
+                    <button type="button" class="btn ghost" id="addBundleItem">Add item</button>
+                    <div class="sub">A bundle needs at least two items. Purchase grants every row in one package.</div>
                 </div>
                 <div class="field" data-for="vehicles exclusives limited">
                     <label>Vehicle spawn name</label>
@@ -800,7 +863,7 @@ function renderAdmin() {
                             <td>${row.image ? `<img class="listing-thumb" src="${escapeHtml(row.image)}" alt="" />` : ''}</td>
                             <td>${escapeHtml(row.label)}<div class="sub">${escapeHtml(row.id)}</div></td>
                             <td>${escapeHtml(row.category)}${row.tier ? ` / ${escapeHtml(row.tier)}` : ''}</td>
-                            <td>${escapeHtml(row.item || row.weapon || row.model || row.petModel || '—')}</td>
+                            <td>${escapeHtml(listingContents(row))}</td>
                             <td>${formatCoins(row.price)}</td>
                             <td class="actions">
                                 <button class="btn ghost" data-edit-listing="${escapeHtml(row.id)}">Edit</button>
@@ -882,10 +945,11 @@ function renderContent() {
         dashboard: renderDashboard,
         vehicles: renderVehicles,
         weapons: renderWeapons,
-        extras: () => renderSimpleShop('extras', 'Extra Items', 'Utility packs, ammo, and quality-of-life bundles.'),
+        extras: () => renderSimpleShop('extras', 'Extra Items', 'Single ox_inventory items like armour, ammo, and repair kits.'),
+        bundles: () => renderSimpleShop('bundles', 'Bundles', 'One purchase grants every ox_inventory item in the package.'),
+        pets: () => renderSimpleShop('pets', 'Pets', 'Companion peds you can spawn from inventory.'),
         exclusives: () => renderSimpleShop('exclusives', 'City Exclusives', 'One-per-character drops that never hit public dealers.'),
         limited: () => renderSimpleShop('limited', 'Limited Time', 'Timed stock. When the window closes, the listing disappears.'),
-        pets: () => renderSimpleShop('pets', 'Pets', 'Companion peds you can spawn from inventory.'),
         inventory: renderInventory,
         admin: renderAdmin,
     };
@@ -972,6 +1036,23 @@ function renderContent() {
         root.querySelector('#listCategory').addEventListener('change', toggleListingFields);
         const image = root.querySelector('#listImage');
         if (image) image.addEventListener('input', toggleListingFields);
+        const addBundle = root.querySelector('#addBundleItem');
+        if (addBundle) {
+            addBundle.addEventListener('click', () => {
+                const wrap = document.getElementById('bundleRows');
+                if (wrap) wrap.insertAdjacentHTML('beforeend', bundleRowHtml({ item: '', count: 1 }));
+            });
+        }
+        const bundleRows = root.querySelector('#bundleRows');
+        if (bundleRows) {
+            bundleRows.addEventListener('click', (e) => {
+                const btn = e.target.closest('.bundle-remove');
+                if (!btn) return;
+                const rows = bundleRows.querySelectorAll('.bundle-row');
+                if (rows.length <= 1) return;
+                btn.closest('.bundle-row')?.remove();
+            });
+        }
         const saveListing = root.querySelector('#saveListing');
         if (saveListing) {
             saveListing.addEventListener('click', async () => {
@@ -1032,6 +1113,7 @@ function confirmBuy(itemId, asGift) {
         <div class="modal-card">
             <h3>${asGift ? 'Gift' : 'Buy'} ${escapeHtml(item.label)}</h3>
             <p>${escapeHtml(item.description || '')}<br />Cost: <strong>${formatCoins(item.price)} ${state.currency.short}</strong></p>
+            ${item.category === 'bundles' && (item.ox?.grants || item.extras || []).length ? `<p class="sub">Includes: ${(item.ox?.grants || item.extras).map((g) => `${g.count || 1}× ${escapeHtml(g.label || g.item || g.name)}`).join(', ')}</p>` : ''}
             ${asGift ? `
                 <div class="field">
                     <label>Player ID</label>

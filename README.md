@@ -6,10 +6,11 @@ Open with **F11** or `/donator`.
 
 ## Features
 
-- **In-game shop editor** — admins add vehicles, weapons, extras, exclusives, limited drops, and pets from the Admin tab (image link, display name, ox item name, price, and the rest)
+- **In-game shop editor** — admins add vehicles, weapons, extras, bundles, pets, exclusives, and limited drops from the Admin tab (image link, display name, ox item name, price, and the rest)
 - **Empty catalog by default** — no built-in items; you add your own
 - **Vehicles** — bronze, silver, and gold tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
 - **Weapons & extras** — granted through **ox_inventory** (`CanCarryItem`, `AddItem`, `RemoveItem`)
+- **Bundles** — one listing that grants multiple ox_inventory items in a single purchase
 - **Images** — shop UI and inventory icons from **Fivemanage** CDN links (`metadata.imageurl`)
 - **City exclusives** — unique one-per-character vehicles, weapons, and access cards
 - **Limited time** — server-enforced windows, stock counts, and countdown in the UI
@@ -49,7 +50,7 @@ add_ace group.admin donator.admin allow
 
 Every catalog card and every ox_inventory grant can use a Fivemanage URL.
 
-1. Upload images in the Fivemanage dashboard (vehicles, weapons, extras, pets).
+1. Upload images in the Fivemanage dashboard (vehicles, weapons, extras, bundles, pets).
 2. Set the folder URL in `config.lua`:
 
 ```lua
@@ -141,17 +142,20 @@ The **Admin** tab inside the store is where you add shop items, grant coins, cre
 
 1. Open the store with **F11** as an admin and open **Admin**.
 2. Fill **Add shop listing**:
-   - **Category** — Vehicle, Weapon, Extra item, City exclusive, Limited time, or Pet
+   - **Category** — Vehicle, Weapon, Extra item, Bundle, Pet, City exclusive, or Limited time
    - **Display name** — card title
    - **Price** — Rebel Coins
    - **Image link** — full Fivemanage URL (`https://r2.fivemanage.com/.../sultan.webp`)
    - **ox_inventory item name** — for weapons, extras, and pets (`armour`, `WEAPON_PISTOL`, `pet_husky`)
+   - **Bundle items** — for bundles, add two or more ox_inventory names with counts (`armour` x5, `bandage` x10)
    - **Vehicle spawn name** — for cars (`sultan`)
    - **Item count**, **ammo**, **JG garage**, **pet model**, **unique**, **stock**, and limited dates as needed
 3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_donator_listings`.
 4. Use **Edit** / **Delete** on the listings table to change or remove it.
 
-Weapons and extras grant the ox_inventory item. Vehicles go into JG Advanced Garages. Pets grant an ox item whose name is the listing id (set Custom id to your ox item name).
+Weapons and extras grant the ox_inventory item. Bundles grant every item in the package. Vehicles go into JG Advanced Garages. Pets grant an ox item whose name is the listing id (set Custom id to your ox item name).
+
+Tabs are ordered Dashboard → Vehicles → Weapons → Extra Items → Bundles → Pets → City Exclusives → Limited Time → Inventory → Admin.
 
 The default shop is empty on purpose so you only sell what you add.
 

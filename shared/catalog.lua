@@ -1,7 +1,7 @@
 --[[
     Live shop catalog. Built-in listings are empty on purpose — admins add
-    vehicles, weapons, extras, exclusives, limited drops, and pets in-game
-    from the Admin tab (stored in dj_donator_listings).
+    vehicles, weapons, extras, bundles, pets, exclusives, and limited drops
+    in-game from the Admin tab (stored in dj_donator_listings).
 ]]
 
 function CatalogReset()
@@ -9,9 +9,10 @@ function CatalogReset()
         vehicles = { bronze = {}, silver = {}, gold = {} },
         weapons = { bronze = {}, silver = {}, gold = {} },
         extras = {},
+        bundles = {},
+        pets = {},
         exclusives = {},
         limited = {},
-        pets = {},
     }
 end
 
@@ -62,9 +63,10 @@ function CatalogAll()
         take(Catalog.weapons[tier], 'weapons', tier)
     end
     take(Catalog.extras, 'extras')
+    take(Catalog.bundles, 'bundles')
+    take(Catalog.pets, 'pets')
     take(Catalog.exclusives, 'exclusives')
     take(Catalog.limited, 'limited')
-    take(Catalog.pets, 'pets')
     return out
 end
 

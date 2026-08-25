@@ -35,7 +35,7 @@ Config.OxInventory = {
 --[[
     Fivemanage CDN images for the shop UI and ox_inventory metadata.imageurl.
 
-    1. Upload PNGs/WebPs in the Fivemanage dashboard (vehicles, weapons, extras, pets).
+    1. Upload PNGs/WebPs in the Fivemanage dashboard (vehicles, weapons, extras, bundles, pets).
     2. Paste the folder URL below (everything before the filename).
     3. Name files after the spawn/item key: sultan.webp, weapon_pistol.webp, pet_husky.webp
     4. ox_inventory already allows r2.fivemanage.com and i.fmfile.com in inventory:validhosts.
