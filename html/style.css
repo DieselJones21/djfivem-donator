@@ -137,6 +137,12 @@ textarea {
 }
 
 .app {
+    --red: var(--accent);
+    --red-2: var(--accent-2);
+    --red-dim: rgba(var(--accent-rgb), 0.22);
+    --blue: var(--secondary-2);
+    --blue-2: var(--secondary);
+    --glow: 0 0 22px rgba(var(--accent-rgb), 0.28);
     width: 100%;
     height: 100%;
     display: flex;
@@ -344,7 +350,8 @@ textarea {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: var(--red);
+    background: rgba(0, 0, 0, 0.28);
+    color: #fff;
     display: grid;
     place-items: center;
     font-size: 12px;
