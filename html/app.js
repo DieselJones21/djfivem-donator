@@ -31,8 +31,8 @@ const TABS = [
 
 const state = {
     tab: 'dashboard',
-    vehicleTier: 'bronze',
-    weaponTier: 'bronze',
+    vehicleTier: 'all',
+    weaponTier: 'all',
     chartMode: 'spend',
     search: '',
     player: null,
@@ -514,11 +514,21 @@ function shopToolbar(title, sub, extraHtml = '') {
     `;
 }
 
+function shopListFor(kind, tier) {
+    const groups = state.catalog?.[kind] || {};
+    if (tier === 'all') {
+        return ['bronze', 'silver', 'gold'].flatMap((name) =>
+            (groups[name] || []).map((item) => ({ ...item, category: kind, tier: item.tier || name }))
+        );
+    }
+    return (groups[tier] || []).map((item) => ({ ...item, category: kind, tier: item.tier || tier }));
+}
+
 function tierPills(kind) {
     const current = kind === 'vehicles' ? state.vehicleTier : state.weaponTier;
     return `
         <div class="pills" id="tierPills">
-            ${['bronze', 'silver', 'gold'].map((tier) => `<button class="pill ${tier} ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier[0].toUpperCase() + tier.slice(1)}</button>`).join('')}
+            ${['all', 'bronze', 'silver', 'gold'].map((tier) => `<button class="pill ${tier} ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier === 'all' ? 'All' : tier[0].toUpperCase() + tier.slice(1)}</button>`).join('')}
         </div>
     `;
 }
@@ -535,22 +545,22 @@ function filterList(list) {
 
 function renderVehicles() {
     const tier = state.vehicleTier;
-    const list = filterList(state.catalog?.vehicles?.[tier] || []);
+    const list = filterList(shopListFor('vehicles', tier));
     return `
         <section class="panel">
             ${shopToolbar('Vehicles', 'Bronze, silver, and gold donor cars delivered to your garage.', tierPills('vehicles'))}
-            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No vehicles in this tier yet. Admins add them from the Admin tab.</div>'}</div>
+            <div class="grid">${list.map((item) => itemCard(item, { tier: item.tier })).join('') || '<div class="empty">No vehicles in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
 }
 
 function renderWeapons() {
     const tier = state.weaponTier;
-    const list = filterList(state.catalog?.weapons?.[tier] || []);
+    const list = filterList(shopListFor('weapons', tier));
     return `
         <section class="panel">
             ${shopToolbar('Weapons', 'Three combat tiers. Unique and stock rules are enforced on purchase.', tierPills('weapons'))}
-            <div class="grid">${list.map((item) => itemCard(item, { tier })).join('') || '<div class="empty">No weapons in this tier yet. Admins add them from the Admin tab.</div>'}</div>
+            <div class="grid">${list.map((item) => itemCard(item, { tier: item.tier })).join('') || '<div class="empty">No weapons in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
 }
