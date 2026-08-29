@@ -5,7 +5,7 @@ lua54 'yes'
 name 'dj-donator'
 author 'DieselJones21'
 description 'Rebel Coins donator store with in-game listing editor, Fivemanage images, ox_inventory, and JG garages'
-version '1.2.0'
+version '1.3.0'
 
 shared_scripts {
     'config.lua',
@@ -40,6 +40,7 @@ files {
     'html/style.css',
     'html/app.js',
     'html/images/*.png',
+    'html/images/*.jpg',
 }
 
 dependencies {

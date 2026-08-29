@@ -1,6 +1,6 @@
 # Rebel Donator (`dj-donator`)
 
-FiveM donator store with a **Rebel Coins** currency, a red / white / black dashboard UI, oxmysql persistence, and Discord webhook logs for every purchase and admin action.
+FiveM donator store with a **Rebel Coins** currency, a red / white / blue sidebar shop UI, oxmysql persistence, and Discord webhook logs for every purchase and admin action.
 
 Open with **F11** or `/donator`.
 

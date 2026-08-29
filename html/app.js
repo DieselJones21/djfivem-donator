@@ -14,8 +14,10 @@ const ICONS = {
     admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z"/></svg>',
 };
 
+const GEM = '<svg class="gem" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7-8 13L4 9l8-7zm0 3.2L7.2 9h9.6L12 5.2z"/></svg>';
+
 const TABS = [
-    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'dashboard', label: 'Main Page' },
     { id: 'vehicles', label: 'Vehicles' },
     { id: 'weapons', label: 'Weapons' },
     { id: 'extras', label: 'Extra Items' },
@@ -76,6 +78,41 @@ function putListing(catalog, item) {
 function catalogFromListings(listings) {
     const catalog = emptyCatalog();
     (listings || []).forEach((item) => putListing(catalog, item));
+    return catalog;
+}
+
+function decoratePreviewItem(item) {
+    const copy = { ...item };
+    if (copy.extras) {
+        copy.ox = {
+            registered: true,
+            grants: copy.extras.map((g) => ({ name: g.item, label: g.item, count: g.count, registered: true })),
+        };
+    }
+    return copy;
+}
+
+function previewCatalog() {
+    const catalog = emptyCatalog();
+    [
+        decoratePreviewItem({
+            id: 'veh_sultan', category: 'vehicles', tier: 'gold', label: 'Karin Sultan',
+            description: 'Gold-tier donor car delivered to your garage.', price: 8750, remaining: 8,
+        }),
+        decoratePreviewItem({
+            id: 'wep_pistol', category: 'weapons', tier: 'bronze', label: 'Combat Pistol',
+            description: 'Sidearm grant with ammo.', price: 2450, remaining: 18, item: 'WEAPON_PISTOL', weapon: 'WEAPON_PISTOL',
+        }),
+        decoratePreviewItem({
+            id: 'ext_armour', category: 'extras', label: 'Armour Pack',
+            description: 'Five armour plates for the next fight.', price: 400, extras: [{ item: 'armour', count: 5 }],
+        }),
+        decoratePreviewItem({
+            id: 'bdl_starter', category: 'bundles', label: 'Starter Kit',
+            description: 'Armour, bandages, and lockpicks in one package.', price: 250, remaining: 6,
+            extras: [{ item: 'armour', count: 5 }, { item: 'bandage', count: 10 }, { item: 'lockpick', count: 2 }],
+        }),
+    ].forEach((item) => putListing(catalog, item));
     return catalog;
 }
 
@@ -158,7 +195,7 @@ function mockOpen() {
                 { day: '2026-08-24', total: 2860 },
             ],
         },
-        catalog: emptyCatalog(),
+        catalog: previewCatalog(),
         players: [
             { id: 1, name: 'MoodyNewt8638' },
             { id: 12, name: 'RebelGuest' },
@@ -170,7 +207,12 @@ function mockOpen() {
             ],
             logs: [],
             codes: [],
-            listings: [],
+            listings: [
+                { id: 'veh_sultan', category: 'vehicles', tier: 'gold', label: 'Karin Sultan', price: 8750, model: 'sultan' },
+                { id: 'wep_pistol', category: 'weapons', tier: 'bronze', label: 'Combat Pistol', price: 2450, item: 'WEAPON_PISTOL', weapon: 'WEAPON_PISTOL' },
+                { id: 'ext_armour', category: 'extras', label: 'Armour Pack', price: 400, item: 'armour', extras: [{ item: 'armour', count: 5 }] },
+                { id: 'bdl_starter', category: 'bundles', label: 'Starter Kit', price: 250, extras: [{ item: 'armour', count: 5 }, { item: 'bandage', count: 10 }, { item: 'lockpick', count: 2 }] },
+            ],
         },
     };
 }
@@ -266,7 +308,7 @@ function openUI(payload) {
     applyPayload(payload);
     document.getElementById('app').classList.remove('hidden');
     if (!IS_NUI) document.getElementById('app').classList.add('preview');
-    document.getElementById('closeHint').textContent = `${state.keybind} (Minimize Menu)`;
+    document.getElementById('closeHint').textContent = state.keybind;
     render();
 }
 
@@ -314,6 +356,31 @@ function remainingLabel(item) {
     return days > 0 ? `${days}d ${hours}h left` : `${hours}h left`;
 }
 
+function allCatalogItems() {
+    const cat = state.catalog || emptyCatalog();
+    const out = [];
+    ['bronze', 'silver', 'gold'].forEach((tier) => {
+        (cat.vehicles?.[tier] || []).forEach((item) => out.push({ ...item, category: 'vehicles', tier }));
+        (cat.weapons?.[tier] || []).forEach((item) => out.push({ ...item, category: 'weapons', tier }));
+    });
+    ['extras', 'bundles', 'pets', 'exclusives', 'limited'].forEach((key) => {
+        (cat[key] || []).forEach((item) => out.push({ ...item, category: key }));
+    });
+    return out;
+}
+
+function categoryLabel(item) {
+    return ({
+        vehicles: 'VEHICLE',
+        weapons: 'WEAPON',
+        extras: 'ITEM',
+        bundles: 'BUNDLE',
+        pets: 'PET',
+        exclusives: 'EXCLUSIVE',
+        limited: 'LIMITED',
+    })[item.category] || 'ITEM';
+}
+
 function renderTabs() {
     const nav = document.getElementById('tabs');
     nav.innerHTML = TABS.filter((tab) => !tab.admin || state.player?.isAdmin).map((tab) => `
@@ -330,39 +397,24 @@ function renderTabs() {
     });
 }
 
-function renderProfile() {
-    const p = state.player || { name: 'Unknown', isAdmin: false };
-    document.getElementById('profile').innerHTML = `
-        <div class="meta">
-            <div class="name">${escapeHtml(p.name || 'Unknown')}</div>
-            <div class="role">${p.isAdmin ? 'Admin' : 'Member'}</div>
-        </div>
-        <div class="avatar">R</div>
-    `;
-}
-
-function renderStats() {
-    const p = state.player || { coins: 0, owned: [], history: [] };
-    const owned = (p.owned || []).filter((x) => Number(x.active) === 1).length;
-    const purchases = (p.history || []).length;
-    const weight = p.ox && p.ox.maxWeight
-        ? `<div class="weight">ox_inventory ${(p.ox.weight / 1000).toFixed(1)} / ${(p.ox.maxWeight / 1000).toFixed(1)} kg</div>`
-        : '';
-    document.getElementById('stats').innerHTML = `
-        <article class="stat">
-            <div class="label">${state.currency.name} Total</div>
-            <div class="row"><div class="value">${formatCoins(p.coins)}</div><div class="badge">▲ ${formatCoins(p.lifetimeGranted || p.coins)}</div></div>
-        </article>
-        <article class="stat">
-            <div class="label">Items Owned</div>
-            <div class="row"><div class="value">${owned}</div><div class="badge">▲ ${owned}</div></div>
-        </article>
-        <article class="stat">
-            <div class="label">Purchases</div>
-            <div class="row"><div class="value">${purchases}</div><div class="badge">▲ ${formatCoins(p.lifetimeSpent || 0)}</div></div>
-            ${weight}
-        </article>
-    `;
+function renderHeader() {
+    const p = state.player || { name: 'Unknown', isAdmin: false, coins: 0 };
+    const coinChip = document.getElementById('coinChip');
+    if (coinChip) coinChip.innerHTML = `${GEM}<span>${formatCoins(p.coins)}</span>`;
+    const profile = document.getElementById('profile');
+    if (profile) {
+        profile.innerHTML = `
+            <div class="meta">
+                <div class="name">${escapeHtml(p.name || 'Unknown')}</div>
+                <div class="role">${p.isAdmin ? 'Admin' : 'Member'}</div>
+            </div>
+            <div class="avatar">R</div>
+        `;
+    }
+    const shop = document.getElementById('modeShop');
+    const stash = document.getElementById('modeInventory');
+    if (shop) shop.classList.toggle('active', state.tab !== 'inventory');
+    if (stash) stash.classList.toggle('active', state.tab === 'inventory');
 }
 
 function escapeHtml(str) {
@@ -404,23 +456,32 @@ function itemCard(item, extra = {}) {
     const grantRow = grants.length
         ? `<div class="ox-row">${grants.map((g) => `<span class="ox-chip">${oxImage(g.image, g.label)} x${g.count} ${escapeHtml(g.label || g.name)}</span>`).join('')}</div>`
         : '';
+    let badge = '';
+    if (extra.featured || item.category === 'bundles') badge = '<div class="tierchip popular">POPULAR</div>';
+    else if (tier) badge = `<div class="tierchip ${tier}">${tier}</div>`;
+    else if (item.limitedUntil) badge = '<div class="tierchip limited">LIMITED</div>';
+    const remaining = item.remaining;
+    const stock = remaining != null
+        ? `<div class="stock-pill ${remaining <= 8 ? 'low' : 'ok'}">ONLY ${remaining} LEFT</div>`
+        : '';
     return `
         <article class="card">
             <div class="media">
-                ${tier ? `<div class="tierchip ${tier}">${tier}</div>` : (item.category === 'bundles' ? '<div class="tierchip bundle">BUNDLE</div>' : (item.limitedUntil ? '<div class="tierchip limited">LIMITED</div>' : ''))}
+                ${badge}
                 ${img}
+                ${stock}
             </div>
             <div class="body">
-                <h3>${escapeHtml(item.label)}</h3>
-                <p>${escapeHtml(item.description || '')}</p>
+                <div class="cat-label">${categoryLabel(item)}</div>
+                <div class="title-row">
+                    <h3>${escapeHtml(item.label)}</h3>
+                    <div class="price">${GEM}${formatCoins(item.price)}</div>
+                </div>
                 ${grantRow}
                 ${item.limitedUntil ? `<div class="countdown">${remainingLabel(item)}${item.remaining != null ? ` • ${item.remaining} left` : ''}</div>` : ''}
-                <div class="price-row">
-                    <div class="price"><span>${formatCoins(item.price)}</span> ${state.currency.short}</div>
-                    <div class="actions">
-                        <button class="btn primary" ${disabled ? 'disabled' : ''} data-buy="${item.id}">${owned && item.unique ? 'Owned' : 'Buy'}</button>
-                        <button class="btn ghost" ${disabled ? 'disabled' : ''} data-gift="${item.id}">Gift</button>
-                    </div>
+                <div class="card-actions">
+                    <button class="btn info" data-info="${item.id}">Info</button>
+                    <button class="btn add" ${disabled ? 'disabled' : ''} data-buy="${item.id}">${owned && item.unique ? 'Owned' : 'Add'}</button>
                 </div>
             </div>
         </article>
@@ -430,6 +491,12 @@ function itemCard(item, extra = {}) {
 function bindShopButtons(root) {
     root.querySelectorAll('[data-buy]').forEach((btn) => btn.addEventListener('click', () => confirmBuy(btn.dataset.buy, false)));
     root.querySelectorAll('[data-gift]').forEach((btn) => btn.addEventListener('click', () => confirmBuy(btn.dataset.gift, true)));
+    root.querySelectorAll('[data-info]').forEach((btn) => btn.addEventListener('click', () => showInfo(btn.dataset.info)));
+    root.querySelectorAll('[data-goto]').forEach((btn) => btn.addEventListener('click', () => {
+        state.tab = btn.dataset.goto;
+        state.search = '';
+        render();
+    }));
 }
 
 function shopToolbar(title, sub, extraHtml = '') {
@@ -531,15 +598,15 @@ function polyline(series, mode) {
         <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="chartStroke" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#ff8a70" />
-                    <stop offset="50%" stop-color="#e10600" />
-                    <stop offset="100%" stop-color="#ffd27a" />
+                    <stop offset="0%" stop-color="#ef2444" />
+                    <stop offset="55%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#3b82f6" />
                 </linearGradient>
             </defs>
             <polyline fill="none" stroke="url(#chartStroke)" stroke-width="4" points="${pts}" />
             ${pts.split(' ').map((p) => {
                 const [x, y] = p.split(',');
-                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#ff3b33" stroke-width="2" />`;
+                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#c8102e" stroke-width="2" />`;
             }).join('')}
             ${labels}
             <text class="axis" x="16" y="40">${max} RC</text>
@@ -550,38 +617,44 @@ function polyline(series, mode) {
 
 function renderDashboard() {
     const p = state.player || {};
-    const history = p.history || [];
+    const owned = (p.owned || []).filter((row) => Number(row.active) === 1).length;
+    const featured = filterList(allCatalogItems()).slice(0, 4);
+    const placeholders = Math.max(0, 4 - featured.length);
+    const target = Math.max(1, p.lifetimeGranted || 5000);
+    const progress = Math.min(100, Math.round(((p.lifetimeSpent || 0) / target) * 100));
     return `
         <section class="panel">
-            <div class="panel-head">
-                <div>
-                    <h2>Statistics overview</h2>
-                    <div class="sub">${state.currency.name} ${formatCoins(p.coins)}</div>
-                </div>
-                <div class="pills">
-                    <button class="pill ${state.chartMode === 'spend' ? 'active' : ''}" data-chart="spend">Spend</button>
-                    <button class="pill ${state.chartMode === 'purchases' ? 'active' : ''}" data-chart="purchases">Purchases</button>
-                    <button class="pill ${state.chartMode === 'coins' ? 'active' : ''}" data-chart="coins">Coins</button>
-                </div>
-            </div>
-            <div class="dash-grid">
-                <div class="chart-wrap">${polyline(p.series, state.chartMode)}</div>
-                <div>
-                    <h3 style="margin-bottom:8px">Recent activity</h3>
-                    <table class="table">
-                        <thead><tr><th>Item</th><th>RC</th><th>When</th></tr></thead>
-                        <tbody>
-                            ${history.slice(0, 7).map((row) => `<tr><td>${escapeHtml(row.label)}</td><td>${formatCoins(row.price)}</td><td>${formatDate(row.created_at)}</td></tr>`).join('') || '<tr><td colspan="3">No purchases yet.</td></tr>'}
-                        </tbody>
-                    </table>
-                    <div class="field" style="margin-top:14px">
-                        <label>Redeem code</label>
-                        <div class="actions">
-                            <input class="search" id="redeemCode" placeholder="REBEL100" style="flex:1;border-radius:10px" />
-                            <button class="btn primary" id="redeemBtn">Redeem</button>
-                        </div>
+            <div class="hero">
+                <div class="hero-banner">
+                    <img src="images/rebel-logo.jpg" alt="Rebel Roleplay" />
+                    <div class="veil"></div>
+                    <div class="hero-copy">
+                        <h2>Rebel Donator Store</h2>
+                        <p>Vehicles, weapons, extras, and bundles. One purchase, one package, delivered in-game.</p>
+                        <button class="btn add" data-goto="vehicles">Shop vehicles →</button>
                     </div>
                 </div>
+                <div class="member-card">
+                    <div class="kicker">MEMBER STATUS</div>
+                    <h3>${escapeHtml(p.name || 'Rebel')}</h3>
+                    <div class="sub">${p.isAdmin ? 'Admin' : 'Member'} • ${formatCoins(p.coins)} ${state.currency.short}</div>
+                    <div class="progress"><span style="width:${progress}%"></span></div>
+                    <div class="stat-mini"><span>Owned ${owned}</span><span>Spent ${formatCoins(p.lifetimeSpent || 0)} RC</span></div>
+                    <div class="chart-wrap" style="height:110px">${polyline(p.series, state.chartMode)}</div>
+                </div>
+            </div>
+            <div class="panel-head">
+                <div>
+                    <div class="section-tabs">
+                        <span class="section-tab active">Featured</span>
+                    </div>
+                    <div class="sub">Packages, vehicles, and extras currently in the shop.</div>
+                </div>
+                <input class="search" id="search" placeholder="Search..." value="${escapeHtml(state.search)}" />
+            </div>
+            <div class="grid">
+                ${featured.map((item) => itemCard(item, { featured: true })).join('')}
+                ${Array.from({ length: placeholders }).map(() => '<div class="empty-card">No package added.</div>').join('')}
             </div>
         </section>
     `;
@@ -591,7 +664,7 @@ function renderInventory() {
     const owned = (state.player?.owned || []).filter((row) => Number(row.active) === 1);
     return `
         <section class="panel">
-            ${shopToolbar('Inventory', 'ox_inventory items land in your bag. Vehicles stay in the garage. Use a pet item or the button here to spawn it.')}
+            ${shopToolbar('Inventory', 'ox_inventory items land in your bag. Vehicles stay in the garage. Pets spawn from here.')}
             ${owned.map((row) => {
                 const isPet = row.category === 'pets' || Boolean((findItem(row.item_id) || {}).petModel);
                 return `
@@ -742,7 +815,7 @@ function renderAdmin() {
             <div class="panel-head">
                 <div>
                     <h2>Admin panel</h2>
-                    <div class="sub">Add shop listings with an image link and ox_inventory item name, then grant Rebel Coins.</div>
+                    <div class="sub">Add shop listings, including multi-item bundles, then grant Rebel Coins.</div>
                 </div>
                 <button class="btn ghost" id="adminRefresh">Refresh</button>
             </div>
@@ -1138,10 +1211,67 @@ function confirmBuy(itemId, asGift) {
     });
 }
 
+function showInfo(itemId) {
+    const item = findItem(itemId);
+    if (!item) return;
+    const grants = item.ox?.grants || item.extras || [];
+    const modal = document.getElementById('modal');
+    modal.classList.remove('hidden');
+    modal.innerHTML = `
+        <div class="modal-card">
+            <div class="cat-label">${categoryLabel(item)}</div>
+            <h3>${escapeHtml(item.label)}</h3>
+            <p>${escapeHtml(item.description || 'No extra details.')}</p>
+            ${grants.length ? `<p class="sub">Includes: ${grants.map((g) => `${g.count || 1}× ${escapeHtml(g.label || g.item || g.name)}`).join(', ')}</p>` : ''}
+            <div class="price" style="margin-bottom:12px">${GEM}${formatCoins(item.price)} ${state.currency.short}</div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="modalCancel">Close</button>
+                <button class="btn ghost" data-gift-now="${item.id}">Gift</button>
+                <button class="btn add" data-buy-now="${item.id}">Add</button>
+            </div>
+        </div>
+    `;
+    modal.querySelector('#modalCancel').addEventListener('click', hideModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+    modal.querySelector('[data-gift-now]').addEventListener('click', () => {
+        hideModal();
+        confirmBuy(item.id, true);
+    });
+    modal.querySelector('[data-buy-now]').addEventListener('click', () => {
+        hideModal();
+        confirmBuy(item.id, false);
+    });
+}
+
+function showRedeemModal() {
+    const modal = document.getElementById('modal');
+    modal.classList.remove('hidden');
+    modal.innerHTML = `
+        <div class="modal-card">
+            <h3>Redeem code</h3>
+            <p>Enter a Rebel Coins code from staff or a package.</p>
+            <div class="field">
+                <label>Code</label>
+                <input id="redeemCode" placeholder="REBEL100" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="modalCancel">Cancel</button>
+                <button class="btn add" id="redeemBtn">Redeem</button>
+            </div>
+        </div>
+    `;
+    modal.querySelector('#modalCancel').addEventListener('click', hideModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+    modal.querySelector('#redeemBtn').addEventListener('click', async () => {
+        const code = document.getElementById('redeemCode').value;
+        hideModal();
+        handleResult(await post('redeem', { code }), 'Code redeemed.');
+    });
+}
+
 function render() {
     renderTabs();
-    renderProfile();
-    renderStats();
+    renderHeader();
     renderContent();
 }
 
@@ -1160,6 +1290,21 @@ window.addEventListener('message', (event) => {
 });
 
 document.getElementById('closeHint').addEventListener('click', closeUI);
+document.getElementById('stashBtn').addEventListener('click', () => {
+    state.tab = 'inventory';
+    state.search = '';
+    render();
+});
+document.getElementById('modeShop').addEventListener('click', () => {
+    if (state.tab === 'inventory') state.tab = 'dashboard';
+    render();
+});
+document.getElementById('modeInventory').addEventListener('click', () => {
+    state.tab = 'inventory';
+    state.search = '';
+    render();
+});
+document.getElementById('headerRedeem').addEventListener('click', showRedeemModal);
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeUI();
