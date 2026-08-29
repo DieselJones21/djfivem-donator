@@ -29,6 +29,17 @@ const TABS = [
     { id: 'admin', label: 'Admin', admin: true },
 ];
 
+const THEMES = [
+    { id: 'rebel', label: 'Rebel', a: '#c8102e', b: '#3b82f6' },
+    { id: 'crimson', label: 'Crimson', a: '#e10600', b: '#ff6a5a' },
+    { id: 'ocean', label: 'Ocean', a: '#0ea5e9', b: '#22d3ee' },
+    { id: 'gold', label: 'Gold', a: '#d4a017', b: '#fff1b8' },
+    { id: 'emerald', label: 'Emerald', a: '#10b981', b: '#6ee7b7' },
+    { id: 'violet', label: 'Violet', a: '#ff2ea6', b: '#a78bfa' },
+];
+const THEME_KEY = 'dj-donator-theme';
+const VALID_THEMES = THEMES.map((theme) => theme.id);
+
 const state = {
     tab: 'dashboard',
     vehicleTier: 'all',
@@ -44,6 +55,8 @@ const state = {
     serverName: 'Rebel RP',
     keybind: 'F11',
     locale: {},
+    theme: 'rebel',
+    allowThemePicker: true,
 };
 
 function emptyCatalog() {
@@ -196,6 +209,8 @@ function mockOpen() {
             ],
         },
         catalog: previewCatalog(),
+        theme: 'rebel',
+        allowThemePicker: true,
         players: [
             { id: 1, name: 'MoodyNewt8638' },
             { id: 12, name: 'RebelGuest' },
@@ -302,6 +317,57 @@ function applyPayload(payload) {
     if (payload.locale) state.locale = payload.locale;
     if (payload.lookup) state.lookup = payload.lookup;
     if (payload.players) state.players = payload.players;
+    if (payload.allowThemePicker !== undefined) state.allowThemePicker = !!payload.allowThemePicker;
+    if (payload.theme) state.theme = normalizeTheme(payload.theme);
+}
+
+function normalizeTheme(name) {
+    return VALID_THEMES.includes(name) ? name : 'rebel';
+}
+
+function savedTheme() {
+    try {
+        return localStorage.getItem(THEME_KEY);
+    } catch (err) {
+        return null;
+    }
+}
+
+function persistTheme(name) {
+    try {
+        localStorage.setItem(THEME_KEY, name);
+    } catch (err) {
+        /* NUI storage can be blocked */
+    }
+}
+
+function resolveTheme(payload) {
+    const serverTheme = normalizeTheme(payload?.theme || state.theme);
+    if (!state.allowThemePicker) return serverTheme;
+    const saved = savedTheme();
+    return saved && VALID_THEMES.includes(saved) ? saved : serverTheme;
+}
+
+function renderThemePicker() {
+    const root = document.getElementById('themePicker');
+    if (!root) return;
+    if (!state.allowThemePicker) {
+        root.hidden = true;
+        root.innerHTML = '';
+        return;
+    }
+    root.hidden = false;
+    root.innerHTML = THEMES.map((theme) => `
+        <button type="button" class="theme-swatch ${state.theme === theme.id ? 'active' : ''}" data-theme="${theme.id}" title="${theme.label}" aria-label="${theme.label}" style="--swatch-a:${theme.a};--swatch-b:${theme.b}"></button>
+    `).join('');
+}
+
+function applyTheme(name) {
+    const theme = normalizeTheme(name);
+    state.theme = theme;
+    document.getElementById('app').dataset.theme = theme;
+    if (state.allowThemePicker) persistTheme(theme);
+    renderThemePicker();
 }
 
 function openUI(payload) {
@@ -309,6 +375,7 @@ function openUI(payload) {
     document.getElementById('app').classList.remove('hidden');
     if (!IS_NUI) document.getElementById('app').classList.add('preview');
     document.getElementById('closeHint').textContent = state.keybind;
+    applyTheme(resolveTheme(payload));
     render();
 }
 
@@ -608,15 +675,15 @@ function polyline(series, mode) {
         <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="chartStroke" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#ef2444" />
+                    <stop offset="0%" stop-color="var(--accent-2)" />
                     <stop offset="55%" stop-color="#ffffff" />
-                    <stop offset="100%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="var(--secondary)" />
                 </linearGradient>
             </defs>
             <polyline fill="none" stroke="url(#chartStroke)" stroke-width="4" points="${pts}" />
             ${pts.split(' ').map((p) => {
                 const [x, y] = p.split(',');
-                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#c8102e" stroke-width="2" />`;
+                return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="var(--accent)" stroke-width="2" />`;
             }).join('')}
             ${labels}
             <text class="axis" x="16" y="40">${max} RC</text>
@@ -1282,6 +1349,7 @@ function showRedeemModal() {
 function render() {
     renderTabs();
     renderHeader();
+    renderThemePicker();
     renderContent();
 }
 
@@ -1315,6 +1383,11 @@ document.getElementById('modeInventory').addEventListener('click', () => {
     render();
 });
 document.getElementById('headerRedeem').addEventListener('click', showRedeemModal);
+document.getElementById('themePicker').addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-theme]');
+    if (!btn) return;
+    applyTheme(btn.dataset.theme);
+});
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeUI();

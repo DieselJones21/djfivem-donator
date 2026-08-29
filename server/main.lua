@@ -341,6 +341,8 @@ RegisterDonatorCallback('open', function(source)
         currency = { name = Config.CurrencyName, short = Config.CurrencyShort },
         serverName = Config.ServerName,
         keybind = Config.Keybind,
+        theme = Config.Theme or 'rebel',
+        allowThemePicker = Config.AllowThemePicker ~= false,
     }
 end)
 
