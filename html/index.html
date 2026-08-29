@@ -6,24 +6,45 @@
     <title>Rebel Donator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body style="background: transparent !important;">
-    <div id="app" class="app hidden">
+    <div id="app" class="app hidden" data-theme="rebel">
         <div class="shell">
-            <header class="topbar">
-                <nav class="tabs" id="tabs"></nav>
-                <div class="profile" id="profile"></div>
-            </header>
-
-            <section class="stats" id="stats"></section>
-            <main class="content" id="content"></main>
-
-            <footer class="footer">
-                <div class="brand">Rebel Donator System</div>
-                <button class="keychip" id="closeHint">F11 (Minimize Menu)</button>
-            </footer>
+            <div class="glow glow-a" aria-hidden="true"></div>
+            <div class="glow glow-b" aria-hidden="true"></div>
+            <div class="glow glow-c" aria-hidden="true"></div>
+            <aside class="sidebar">
+                <div class="brand-block">
+                    <img class="logo" src="images/rebel-logo.jpg" alt="Rebel Roleplay" />
+                    <div class="brand-copy">
+                        <div class="brand-kicker">Rebel Roleplay</div>
+                        <div class="brand-name">DONATOR STORE</div>
+                    </div>
+                </div>
+                <nav class="side-nav" id="tabs"></nav>
+                <button class="stash-btn" id="stashBtn" type="button">
+                    <span class="stash-star">★</span>
+                    Bought items? Open stash!
+                </button>
+            </aside>
+            <div class="main-col">
+                <header class="topbar">
+                    <div class="mode-pills">
+                        <button class="mode-btn active" type="button" id="modeShop">Shop</button>
+                        <button class="mode-btn" type="button" id="modeInventory">Stash</button>
+                    </div>
+                    <div class="top-tools">
+                        <div class="theme-picker" id="themePicker" hidden></div>
+                        <div class="coin-chip" id="coinChip"></div>
+                        <button class="btn gold" id="headerRedeem" type="button">REDEEM</button>
+                        <div class="profile" id="profile"></div>
+                        <button class="keychip" id="closeHint" type="button">F11</button>
+                    </div>
+                </header>
+                <main class="content" id="content"></main>
+            </div>
             <div id="toasts" class="toasts"></div>
         </div>
     </div>

@@ -125,6 +125,11 @@ Config.WebhookColor = {
 
 Config.ServerName = 'Rebel RP'
 
+-- Shop color theme: rebel | crimson | ocean | gold | emerald | violet
+Config.Theme = 'rebel'
+-- Players can switch themes in the shop (saved in their NUI). Set false to lock Config.Theme.
+Config.AllowThemePicker = true
+
 -- Notifications: 'auto' | 'ox' | 'esx' | 'qb' | 'native'
 Config.Notify = 'auto'
 

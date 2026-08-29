@@ -1,6 +1,6 @@
 # Rebel Donator (`dj-donator`)
 
-FiveM donator store with a **Rebel Coins** currency, a red / white / black dashboard UI, oxmysql persistence, and Discord webhook logs for every purchase and admin action.
+FiveM donator store with a **Rebel Coins** currency, themed gradient shop UI (Rebel red/white/blue plus Crimson, Ocean, Gold, Emerald, and Violet), oxmysql persistence, and Discord webhook logs for every purchase and admin action.
 
 Open with **F11** or `/donator`.
 
@@ -11,6 +11,7 @@ Open with **F11** or `/donator`.
 - **Vehicles** — bronze, silver, and gold tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
 - **Weapons & extras** — granted through **ox_inventory** (`CanCarryItem`, `AddItem`, `RemoveItem`)
 - **Bundles** — one listing that grants multiple ox_inventory items in a single purchase
+- **Color themes** — Rebel (red/white/blue), Crimson, Ocean, Gold, Emerald, and Violet, with gradient panels and a swatch picker in the shop
 - **Images** — shop UI and inventory icons from **Fivemanage** CDN links (`metadata.imageurl`)
 - **City exclusives** — unique one-per-character vehicles, weapons, and access cards
 - **Limited time** — server-enforced windows, stock counts, and countdown in the UI
@@ -43,6 +44,7 @@ add_ace group.admin donator.admin allow
 4. Open [`config.lua`](config.lua) and set:
    - `Config.Images.baseUrl` to your Fivemanage folder URL
    - `Config.JGGarages.defaultGarage` to a JG garage **name** (example: `legion`)
+   - `Config.Theme` (`rebel`, `crimson`, `ocean`, `gold`, `emerald`, `violet`) and `Config.AllowThemePicker`
    - `Config.Webhooks` Discord URLs
 5. Restart the server.
 
@@ -181,6 +183,26 @@ exports['dj-donator']:AddCoinsIdentifier('license:abc', 500, 'Tebex VIP')
 ```
 
 Use `AddCoinsIdentifier` from a Tebex command when the buyer may not be in-game.
+
+## Color themes
+
+Set the default look in `config.lua`:
+
+```lua
+Config.Theme = 'rebel' -- rebel | crimson | ocean | gold | emerald | violet
+Config.AllowThemePicker = true
+```
+
+| Theme | Accent |
+|---|---|
+| `rebel` | Red / white / blue (default) |
+| `crimson` | Racing red, same family as the shops UI |
+| `ocean` | Cyan / blue |
+| `gold` | Gold / black |
+| `emerald` | Green |
+| `violet` | Pink / purple, same family as the wings UI |
+
+When `AllowThemePicker` is true, players pick a theme from the swatches in the top bar. The choice is stored in that client’s NUI (`localStorage`). Set it to `false` to lock everyone to `Config.Theme`.
 
 ## UI preview
 
