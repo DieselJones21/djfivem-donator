@@ -52,7 +52,7 @@ const state = {
     admin: { players: [], logs: [], codes: [], listings: [] },
     lookup: null,
     players: [],
-    currency: { name: '305 Coins', short: '305' },
+    currency: { name: '305 Coins', short: '305C' },
     serverName: 'The 305',
     keybind: 'F11',
     locale: {},
@@ -186,7 +186,7 @@ function mockOpen() {
         ok: true,
         serverName: 'The 305',
         keybind: 'F11',
-        currency: { name: '305 Coins', short: '305' },
+        currency: { name: '305 Coins', short: '305C' },
         locale: {},
         player: {
             name: 'MoodyNewt8638',
@@ -925,7 +925,7 @@ function renderAdmin() {
                     <input id="listLabel" placeholder="Karin Sultan" />
                 </div>
                 <div class="field" data-for="all">
-                    <label>Price (305)</label>
+                    <label>Price (305C)</label>
                     <input id="listPrice" type="number" min="0" placeholder="250" />
                 </div>
                 <div class="field full" data-for="all">
@@ -1007,7 +1007,7 @@ function renderAdmin() {
             </div>
             <h3 style="margin:18px 0 8px">Shop listings</h3>
             <table class="table">
-                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>305</th><th></th></tr></thead>
+                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>305C</th><th></th></tr></thead>
                 <tbody>
                     ${listings.map((row) => `
                         <tr>
@@ -1048,7 +1048,7 @@ function renderAdmin() {
                     </div>
                     <h3 style="margin:18px 0 8px">Online players</h3>
                     <table class="table">
-                        <thead><tr><th>ID</th><th>Name</th><th>305</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>305C</th></tr></thead>
                         <tbody>
                             ${players.map((p) => `<tr data-fill-id="${p.id}" style="cursor:pointer"><td>${p.id}</td><td>${escapeHtml(p.name)}</td><td>${formatCoins(p.coins)}</td></tr>`).join('') || '<tr><td colspan="3">No players.</td></tr>'}
                         </tbody>
@@ -1072,7 +1072,7 @@ function renderAdmin() {
                     </table>
                     <h3 style="margin:18px 0 8px">Codes</h3>
                     <table class="table">
-                        <thead><tr><th>Code</th><th>305</th><th>Uses</th></tr></thead>
+                        <thead><tr><th>Code</th><th>305C</th><th>Uses</th></tr></thead>
                         <tbody>
                             ${codes.map((row) => `<tr><td>${escapeHtml(row.code)}</td><td>${formatCoins(row.coins)}</td><td>${row.uses}/${row.max_uses}</td></tr>`).join('') || '<tr><td colspan="3">None</td></tr>'}
                         </tbody>

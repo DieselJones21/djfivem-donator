@@ -8,7 +8,7 @@ Config.CloseKey = 'Escape'
 
 -- Currency
 Config.CurrencyName = '305 Coins'
-Config.CurrencyShort = '305'
+Config.CurrencyShort = '305C'
 
 -- Permissions (ACE + framework groups)
 Config.AdminAce = 'donator.admin'
