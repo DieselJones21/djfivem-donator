@@ -4,8 +4,8 @@ lua54 'yes'
 
 name 'dj-donator'
 author 'DieselJones21'
-description 'Rebel Coins donator store with in-game listing editor, Fivemanage images, ox_inventory, and JG garages'
-version '1.3.0'
+description 'The 305 donator store with in-game listing editor, Fivemanage images, ox_inventory, and JG garages'
+version '1.4.0'
 
 shared_scripts {
     'config.lua',

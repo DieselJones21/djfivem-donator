@@ -341,7 +341,7 @@ RegisterDonatorCallback('open', function(source)
         currency = { name = Config.CurrencyName, short = Config.CurrencyShort },
         serverName = Config.ServerName,
         keybind = Config.Keybind,
-        theme = Config.Theme or 'rebel',
+        theme = Config.Theme or 'miami',
         allowThemePicker = Config.AllowThemePicker ~= false,
     }
 end)
@@ -623,7 +623,7 @@ RegisterDonatorCallback('adminCreateCode', function(source, payload)
     local actorId, actorName = Framework.GetIdentifier(source)
     local code = tostring(payload.code or ''):gsub('%s+', ''):upper()
     if code == '' then
-        code = ('RC%06d'):format(math.random(0, 999999))
+        code = ('305%05d'):format(math.random(0, 99999))
     end
     local coins = tonumber(payload.coins) or 0
     local maxUses = tonumber(payload.maxUses) or 1

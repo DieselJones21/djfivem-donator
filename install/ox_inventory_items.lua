@@ -13,12 +13,12 @@
 
 return {
     ['donator_plate'] = {
-        label = 'Rebel Gold Plate Pass',
+        label = '305 Plate Pass',
         weight = 10,
         stack = false,
         close = true,
         consume = 0,
-        description = 'Donator plate pass from the Rebel store.',
+        description = 'Donator plate pass from The 305 store.',
         client = {
             image = 'nui://dj-donator/html/images/donator_plate.png',
         },
@@ -29,7 +29,7 @@ return {
         stack = false,
         close = true,
         consume = 0,
-        description = 'Keycard for the Rebel penthouse interior.',
+        description = 'Keycard for The 305 penthouse interior.',
         client = {
             image = 'nui://dj-donator/html/images/penthouse_card.png',
         },

@@ -3,12 +3,12 @@ Config = {}
 -- Menu
 Config.Command = 'donator'
 Config.Keybind = 'F11'
-Config.KeybindDescription = 'Open Rebel Donator Store'
+Config.KeybindDescription = 'Open The 305 Donator Store'
 Config.CloseKey = 'Escape'
 
 -- Currency
-Config.CurrencyName = 'Rebel Coins'
-Config.CurrencyShort = 'RC'
+Config.CurrencyName = '305 Coins'
+Config.CurrencyShort = '305'
 
 -- Permissions (ACE + framework groups)
 Config.AdminAce = 'donator.admin'
@@ -117,16 +117,16 @@ Config.Webhooks = {
 }
 
 Config.WebhookColor = {
-    purchase = 13697070, -- red
+    purchase = 16711807, -- hot pink #FF007F
     coins = 16777215,    -- white
     admin = 11141120,    -- dark red
     error = 0,           -- black
 }
 
-Config.ServerName = 'Rebel RP'
+Config.ServerName = 'The 305'
 
--- Shop color theme: rebel | crimson | ocean | gold | emerald | violet
-Config.Theme = 'rebel'
+-- Shop color theme: miami | rebel | crimson | ocean | gold | emerald | violet
+Config.Theme = 'miami'
 -- Players can switch themes in the shop (saved in their NUI). Set false to lock Config.Theme.
 Config.AllowThemePicker = true
 

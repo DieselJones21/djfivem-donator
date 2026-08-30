@@ -30,6 +30,7 @@ const TABS = [
 ];
 
 const THEMES = [
+    { id: 'miami', label: 'The 305', a: '#ff1a8c', b: '#00e5ff' },
     { id: 'rebel', label: 'Rebel', a: '#c8102e', b: '#3b82f6' },
     { id: 'crimson', label: 'Crimson', a: '#e10600', b: '#ff6a5a' },
     { id: 'ocean', label: 'Ocean', a: '#0ea5e9', b: '#22d3ee' },
@@ -37,7 +38,7 @@ const THEMES = [
     { id: 'emerald', label: 'Emerald', a: '#10b981', b: '#6ee7b7' },
     { id: 'violet', label: 'Violet', a: '#ff2ea6', b: '#a78bfa' },
 ];
-const THEME_KEY = 'dj-donator-theme';
+const THEME_KEY = 'dj-donator-theme-305';
 const VALID_THEMES = THEMES.map((theme) => theme.id);
 
 const state = {
@@ -51,11 +52,11 @@ const state = {
     admin: { players: [], logs: [], codes: [], listings: [] },
     lookup: null,
     players: [],
-    currency: { name: 'Rebel Coins', short: 'RC' },
-    serverName: 'Rebel RP',
+    currency: { name: '305 Coins', short: '305' },
+    serverName: 'The 305',
     keybind: 'F11',
     locale: {},
-    theme: 'rebel',
+    theme: 'miami',
     allowThemePicker: true,
 };
 
@@ -183,9 +184,9 @@ function mockNormalizeListing(data) {
 function mockOpen() {
     return {
         ok: true,
-        serverName: 'Rebel RP',
+        serverName: 'The 305',
         keybind: 'F11',
-        currency: { name: 'Rebel Coins', short: 'RC' },
+        currency: { name: '305 Coins', short: '305' },
         locale: {},
         player: {
             name: 'MoodyNewt8638',
@@ -209,16 +210,16 @@ function mockOpen() {
             ],
         },
         catalog: previewCatalog(),
-        theme: 'rebel',
+        theme: 'miami',
         allowThemePicker: true,
         players: [
             { id: 1, name: 'MoodyNewt8638' },
-            { id: 12, name: 'RebelGuest' },
+            { id: 12, name: 'NightGuest' },
         ],
         admin: {
             players: [
                 { id: 1, name: 'MoodyNewt8638', identifier: 'license:preview', coins: 3510 },
-                { id: 12, name: 'RebelGuest', identifier: 'license:guest', coins: 80 },
+                { id: 12, name: 'NightGuest', identifier: 'license:guest', coins: 80 },
             ],
             logs: [],
             codes: [],
@@ -238,7 +239,7 @@ async function post(name, data = {}) {
         if (name === 'purchase') {
             const item = findItem(data.itemId);
             if (!item) return { ok: false, message: 'Invalid item.' };
-            if (state.player.coins < item.price) return { ok: false, message: 'You do not have enough Rebel Coins.' };
+            if (state.player.coins < item.price) return { ok: false, message: `You do not have enough ${state.currency.name}.` };
             state.player.coins -= item.price;
             state.player.owned.unshift({ id: Date.now(), item_id: item.id, category: item.category || state.tab, label: item.label, active: 1, created_at: new Date().toISOString() });
             state.player.history.unshift({ id: Date.now(), label: item.label, category: item.category || state.tab, price: item.price, created_at: new Date().toISOString() });
@@ -322,7 +323,7 @@ function applyPayload(payload) {
 }
 
 function normalizeTheme(name) {
-    return VALID_THEMES.includes(name) ? name : 'rebel';
+    return VALID_THEMES.includes(name) ? name : 'miami';
 }
 
 function savedTheme() {
@@ -475,7 +476,7 @@ function renderHeader() {
                 <div class="name">${escapeHtml(p.name || 'Unknown')}</div>
                 <div class="role">${p.isAdmin ? 'Admin' : 'Member'}</div>
             </div>
-            <div class="avatar">R</div>
+            <div class="avatar">3</div>
         `;
     }
     const shop = document.getElementById('modeShop');
@@ -615,7 +616,7 @@ function renderVehicles() {
     const list = filterList(shopListFor('vehicles', tier));
     return `
         <section class="panel">
-            ${shopToolbar('Vehicles', 'Bronze, silver, and gold donor cars delivered to your garage.', tierPills('vehicles'))}
+            ${shopToolbar('Vehicles', 'Bronze, silver, and gold 305 rides, stored in your garage.', tierPills('vehicles'))}
             <div class="grid">${list.map((item) => itemCard(item, { tier: item.tier })).join('') || '<div class="empty">No vehicles in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
@@ -686,7 +687,7 @@ function polyline(series, mode) {
                 return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="var(--accent)" stroke-width="2" />`;
             }).join('')}
             ${labels}
-            <text class="axis" x="16" y="40">${max} RC</text>
+            <text class="axis" x="16" y="40">${max} ${state.currency.short}</text>
             <text class="axis" x="16" y="210">0</text>
         </svg>
     `;
@@ -703,20 +704,20 @@ function renderDashboard() {
         <section class="panel">
             <div class="hero">
                 <div class="hero-banner">
-                    <img src="images/rebel-logo.jpg" alt="Rebel Roleplay" />
+                    <img src="images/the305-logo.png" alt="The 305" />
                     <div class="veil"></div>
                     <div class="hero-copy">
-                        <h2>Rebel Donator Store</h2>
-                        <p>Vehicles, weapons, extras, and bundles. One purchase, one package, delivered in-game.</p>
+                        <h2>The 305 Store</h2>
+                        <p>Miami nights. Exclusive rides, heat, and bundles — one purchase, delivered in-game.</p>
                         <button class="btn add" data-goto="vehicles">Shop vehicles →</button>
                     </div>
                 </div>
                 <div class="member-card">
-                    <div class="kicker">MEMBER STATUS</div>
-                    <h3>${escapeHtml(p.name || 'Rebel')}</h3>
+                    <div class="kicker">305 STATUS</div>
+                    <h3>${escapeHtml(p.name || '305')}</h3>
                     <div class="sub">${p.isAdmin ? 'Admin' : 'Member'} • ${formatCoins(p.coins)} ${state.currency.short}</div>
                     <div class="progress"><span style="width:${progress}%"></span></div>
-                    <div class="stat-mini"><span>Owned ${owned}</span><span>Spent ${formatCoins(p.lifetimeSpent || 0)} RC</span></div>
+                    <div class="stat-mini"><span>Owned ${owned}</span><span>Spent ${formatCoins(p.lifetimeSpent || 0)} ${state.currency.short}</span></div>
                     <div class="chart-wrap" style="height:110px">${polyline(p.series, state.chartMode)}</div>
                 </div>
             </div>
@@ -725,7 +726,7 @@ function renderDashboard() {
                     <div class="section-tabs">
                         <span class="section-tab active">Featured</span>
                     </div>
-                    <div class="sub">Packages, vehicles, and extras currently in the shop.</div>
+                    <div class="sub">Tonight in The 305 — packages, vehicles, and extras in the shop.</div>
                 </div>
                 <input class="search" id="search" placeholder="Search..." value="${escapeHtml(state.search)}" />
             </div>
@@ -892,7 +893,7 @@ function renderAdmin() {
             <div class="panel-head">
                 <div>
                     <h2>Admin panel</h2>
-                    <div class="sub">Add shop listings, including multi-item bundles, then grant Rebel Coins.</div>
+                    <div class="sub">Add shop listings, including multi-item bundles, then grant 305 Coins.</div>
                 </div>
                 <button class="btn ghost" id="adminRefresh">Refresh</button>
             </div>
@@ -924,7 +925,7 @@ function renderAdmin() {
                     <input id="listLabel" placeholder="Karin Sultan" />
                 </div>
                 <div class="field" data-for="all">
-                    <label>Price (RC)</label>
+                    <label>Price (305)</label>
                     <input id="listPrice" type="number" min="0" placeholder="250" />
                 </div>
                 <div class="field full" data-for="all">
@@ -1006,7 +1007,7 @@ function renderAdmin() {
             </div>
             <h3 style="margin:18px 0 8px">Shop listings</h3>
             <table class="table">
-                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>RC</th><th></th></tr></thead>
+                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>305</th><th></th></tr></thead>
                 <tbody>
                     ${listings.map((row) => `
                         <tr>
@@ -1047,7 +1048,7 @@ function renderAdmin() {
                     </div>
                     <h3 style="margin:18px 0 8px">Online players</h3>
                     <table class="table">
-                        <thead><tr><th>ID</th><th>Name</th><th>RC</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>305</th></tr></thead>
                         <tbody>
                             ${players.map((p) => `<tr data-fill-id="${p.id}" style="cursor:pointer"><td>${p.id}</td><td>${escapeHtml(p.name)}</td><td>${formatCoins(p.coins)}</td></tr>`).join('') || '<tr><td colspan="3">No players.</td></tr>'}
                         </tbody>
@@ -1071,14 +1072,14 @@ function renderAdmin() {
                     </table>
                     <h3 style="margin:18px 0 8px">Codes</h3>
                     <table class="table">
-                        <thead><tr><th>Code</th><th>RC</th><th>Uses</th></tr></thead>
+                        <thead><tr><th>Code</th><th>305</th><th>Uses</th></tr></thead>
                         <tbody>
                             ${codes.map((row) => `<tr><td>${escapeHtml(row.code)}</td><td>${formatCoins(row.coins)}</td><td>${row.uses}/${row.max_uses}</td></tr>`).join('') || '<tr><td colspan="3">None</td></tr>'}
                         </tbody>
                     </table>
                     ${lookup ? `
                         <h3 style="margin:18px 0 8px">Lookup ${escapeHtml(lookup.identifier)}</h3>
-                        <div class="sub">Balance ${formatCoins(lookup.coins?.coins)} RC</div>
+                        <div class="sub">Balance ${formatCoins(lookup.coins?.coins)} ${state.currency.short}</div>
                         <table class="table">
                             ${(lookup.history || []).slice(0, 8).map((row) => `<tr><td>${escapeHtml(row.label)}</td><td>${formatCoins(row.price)}</td><td><button class="btn ghost" data-refund="${row.id}">Refund</button></td></tr>`).join('') || '<tr><td>No purchases</td></tr>'}
                         </table>
@@ -1098,7 +1099,7 @@ function renderContent() {
         extras: () => renderSimpleShop('extras', 'Extra Items', 'Single ox_inventory items like armour, ammo, and repair kits.'),
         bundles: () => renderSimpleShop('bundles', 'Bundles', 'One purchase grants every ox_inventory item in the package.'),
         pets: () => renderSimpleShop('pets', 'Pets', 'Companion peds you can spawn from inventory.'),
-        exclusives: () => renderSimpleShop('exclusives', 'City Exclusives', 'One-per-character drops that never hit public dealers.'),
+        exclusives: () => renderSimpleShop('exclusives', 'City Exclusives', 'One-per-character 305 drops that never hit public dealers.'),
         limited: () => renderSimpleShop('limited', 'Limited Time', 'Timed stock. When the window closes, the listing disappears.'),
         inventory: renderInventory,
         admin: renderAdmin,
@@ -1244,7 +1245,7 @@ async function runAdmin(mode) {
         reason: document.getElementById('adminReason').value,
     };
     const map = { give: 'adminGive', remove: 'adminRemove', set: 'adminSet' };
-    handleResult(await post(map[mode], payload), 'Rebel Coins updated.');
+    handleResult(await post(map[mode], payload), `${state.currency.name} updated.`);
 }
 
 function hideModal() {
@@ -1326,7 +1327,7 @@ function showRedeemModal() {
     modal.innerHTML = `
         <div class="modal-card">
             <h3>Redeem code</h3>
-            <p>Enter a Rebel Coins code from staff or a package.</p>
+            <p>Enter a 305 Coins code from staff or a package.</p>
             <div class="field">
                 <label>Code</label>
                 <input id="redeemCode" placeholder="REBEL100" />

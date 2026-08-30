@@ -1,6 +1,6 @@
-# Rebel Donator (`dj-donator`)
+# The 305 Donator (`dj-donator`)
 
-FiveM donator store with a **Rebel Coins** currency, themed gradient shop UI (Rebel red/white/blue plus Crimson, Ocean, Gold, Emerald, and Violet), oxmysql persistence, and Discord webhook logs for every purchase and admin action.
+FiveM donator store for **The 305**, with a **305 Coins** currency, Miami pink/cyan shop UI (plus extra color themes), oxmysql persistence, and Discord webhook logs for every purchase and admin action.
 
 Open with **F11** or `/donator`.
 
@@ -11,12 +11,12 @@ Open with **F11** or `/donator`.
 - **Vehicles** — bronze, silver, and gold tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
 - **Weapons & extras** — granted through **ox_inventory** (`CanCarryItem`, `AddItem`, `RemoveItem`)
 - **Bundles** — one listing that grants multiple ox_inventory items in a single purchase
-- **Color themes** — Rebel (red/white/blue), Crimson, Ocean, Gold, Emerald, and Violet, with gradient panels and a swatch picker in the shop
+- **Color themes** — The 305 (hot pink / cyan) by default, plus Rebel, Crimson, Ocean, Gold, Emerald, and Violet
 - **Images** — shop UI and inventory icons from **Fivemanage** CDN links (`metadata.imageurl`)
 - **City exclusives** — unique one-per-character vehicles, weapons, and access cards
 - **Limited time** — server-enforced windows, stock counts, and countdown in the UI
 - **Pets** — buy a companion ped, spawn / despawn it from ox_inventory
-- **Rebel Coins** — stored per character identifier, granted from chat commands or the in-menu admin panel
+- **305 Coins** — stored per character identifier, granted from chat commands or the in-menu admin panel
 - **Gifting** — buy an item for another player by server ID
 - **Redeem codes** — admins can mint codes that grant coins and/or catalog items
 - **Inventory + history** — owned items, 7-day spend chart, purchase log
@@ -44,7 +44,7 @@ add_ace group.admin donator.admin allow
 4. Open [`config.lua`](config.lua) and set:
    - `Config.Images.baseUrl` to your Fivemanage folder URL
    - `Config.JGGarages.defaultGarage` to a JG garage **name** (example: `legion`)
-   - `Config.Theme` (`rebel`, `crimson`, `ocean`, `gold`, `emerald`, `violet`) and `Config.AllowThemePicker`
+   - `Config.Theme` (`miami`, `rebel`, `crimson`, `ocean`, `gold`, `emerald`, `violet`) and `Config.AllowThemePicker`
    - `Config.Webhooks` Discord URLs
 5. Restart the server.
 
@@ -110,7 +110,7 @@ Merge [`install/ox_inventory_items.lua`](install/ox_inventory_items.lua) into `o
 - `donator_plate`, `penthouse_card`, `repairkit`
 - Pet items with `client.export = 'dj-donator.usePet'`
 
-Players open the store with **F11** or `/donator`. `/coins` prints the current Rebel Coin balance.
+Players open the store with **F11** or `/donator`. `/coins` prints the current 305 Coin balance.
 
 ## JG Advanced Garages
 
@@ -146,7 +146,7 @@ The **Admin** tab inside the store is where you add shop items, grant coins, cre
 2. Fill **Add shop listing**:
    - **Category** — Vehicle, Weapon, Extra item, Bundle, Pet, City exclusive, or Limited time
    - **Display name** — card title
-   - **Price** — Rebel Coins
+   - **Price** — 305 Coins
    - **Image link** — full Fivemanage URL (`https://r2.fivemanage.com/.../sultan.webp`)
    - **ox_inventory item name** — for weapons, extras, and pets (`armour`, `WEAPON_PISTOL`, `pet_husky`)
    - **Bundle items** — for bundles, add two or more ox_inventory names with counts (`armour` x5, `bandage` x10)
@@ -189,13 +189,14 @@ Use `AddCoinsIdentifier` from a Tebex command when the buyer may not be in-game.
 Set the default look in `config.lua`:
 
 ```lua
-Config.Theme = 'rebel' -- rebel | crimson | ocean | gold | emerald | violet
+Config.Theme = 'miami' -- miami | rebel | crimson | ocean | gold | emerald | violet
 Config.AllowThemePicker = true
 ```
 
 | Theme | Accent |
 |---|---|
-| `rebel` | Red / white / blue (default) |
+| `miami` | The 305 — hot pink / cyan (default) |
+| `rebel` | Red / white / blue |
 | `crimson` | Racing red, same family as the shops UI |
 | `ocean` | Cyan / blue |
 | `gold` | Gold / black |
