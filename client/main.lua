@@ -101,19 +101,19 @@ RegisterNUICallback('adminDeleteListing', function(data, cb)
     cb(DonatorCallback('adminDeleteListing', data) or { ok = false })
 end)
 
-RegisterNetEvent('dj-donator:client:notify', function(message, nType)
+RegisterNetEvent('djfivem-305donator:client:notify', function(message, nType)
     BeginTextCommandThefeedPost('STRING')
     AddTextComponentSubstringPlayerName(message)
     EndTextCommandThefeedPostTicker(nType == 'error', true)
     nui('toast', { message = message, type = nType or 'inform' })
 end)
 
-RegisterNetEvent('dj-donator:client:coinsUpdated', function(coins)
+RegisterNetEvent('djfivem-305donator:client:coinsUpdated', function(coins)
     lastCoins = coins
     nui('coins', { coins = coins })
 end)
 
-RegisterNetEvent('dj-donator:client:ownedPetsUpdated', function()
+RegisterNetEvent('djfivem-305donator:client:ownedPetsUpdated', function()
     if open then
         local result = DonatorCallback('open')
         if result and result.ok then
@@ -122,14 +122,14 @@ RegisterNetEvent('dj-donator:client:ownedPetsUpdated', function()
     end
 end)
 
-RegisterNetEvent('dj-donator:client:giveWeaponNative', function(weaponName, ammo)
+RegisterNetEvent('djfivem-305donator:client:giveWeaponNative', function(weaponName, ammo)
     local ped = PlayerPedId()
     if type(weaponName) == 'string' and weaponName:find('WEAPON_') then
         GiveWeaponToPed(ped, joaat(weaponName), ammo or 0, false, true)
     end
 end)
 
-RegisterNetEvent('dj-donator:client:spawnVehicle', function(model, plate)
+RegisterNetEvent('djfivem-305donator:client:spawnVehicle', function(model, plate)
     local hash = type(model) == 'number' and model or joaat(model)
     RequestModel(hash)
     local timeout = GetGameTimer() + 8000
@@ -149,7 +149,7 @@ RegisterNetEvent('dj-donator:client:spawnVehicle', function(model, plate)
 end)
 
 CreateThread(function()
-    TriggerServerEvent('dj-donator:server:playerReady')
+    TriggerServerEvent('djfivem-305donator:server:playerReady')
 end)
 
 AddEventHandler('onResourceStop', function(res)

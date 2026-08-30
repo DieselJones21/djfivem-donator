@@ -58,7 +58,7 @@ CreateThread(function()
         Framework.QBCore = exports['qb-core'] and exports['qb-core']:GetCoreObject() or nil
     end
 
-    print(('[dj-donator] Framework: %s | Inventory: %s'):format(Framework.name, Framework.inventory))
+    print(('[djfivem-305donator] Framework: %s | Inventory: %s'):format(Framework.name, Framework.inventory))
 end)
 
 function Framework.GetIdentifier(source)
@@ -167,7 +167,7 @@ function Framework.Notify(source, message, nType)
     elseif mode == 'qb' then
         TriggerClientEvent('QBCore:Notify', source, message, nType == 'error' and 'error' or 'success')
     else
-        TriggerClientEvent('dj-donator:client:notify', source, message, nType)
+        TriggerClientEvent('djfivem-305donator:client:notify', source, message, nType)
     end
 end
 
@@ -193,7 +193,7 @@ function Framework.AddItem(source, itemName, count, metadata)
             return true
         end
     else
-        TriggerClientEvent('dj-donator:client:giveWeaponNative', source, itemName, count)
+        TriggerClientEvent('djfivem-305donator:client:giveWeaponNative', source, itemName, count)
         return true
     end
     return false
@@ -222,7 +222,7 @@ function Framework.GiveWeapon(source, weaponName, ammo, itemName)
             return true
         end
     else
-        TriggerClientEvent('dj-donator:client:giveWeaponNative', source, weaponName, ammo)
+        TriggerClientEvent('djfivem-305donator:client:giveWeaponNative', source, weaponName, ammo)
         return true
     end
     return false
@@ -270,7 +270,7 @@ function Framework.GiveVehicle(source, identifier, item)
         return plate
     else
         if source then
-            TriggerClientEvent('dj-donator:client:spawnVehicle', source, model, plate)
+            TriggerClientEvent('djfivem-305donator:client:spawnVehicle', source, model, plate)
         end
         return plate
     end

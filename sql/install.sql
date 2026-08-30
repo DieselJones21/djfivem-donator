@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `dj_donator_coins` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_coins` (
     `identifier` VARCHAR(64) NOT NULL,
     `coins` INT NOT NULL DEFAULT 0,
     `lifetime_spent` INT NOT NULL DEFAULT 0,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_coins` (
     PRIMARY KEY (`identifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_owned` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_owned` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `identifier` VARCHAR(64) NOT NULL,
     `item_id` VARCHAR(64) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_owned` (
     KEY `identifier_item` (`identifier`, `item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_purchases` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_purchases` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `identifier` VARCHAR(64) NOT NULL,
     `player_name` VARCHAR(64) DEFAULT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_purchases` (
     KEY `identifier_created` (`identifier`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_logs` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_logs` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `actor_identifier` VARCHAR(64) NOT NULL,
     `actor_name` VARCHAR(64) DEFAULT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_logs` (
     KEY `action` (`action`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_codes` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_codes` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(32) NOT NULL,
     `coins` INT NOT NULL DEFAULT 0,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_codes` (
     UNIQUE KEY `code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_code_redemptions` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_code_redemptions` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `code_id` INT NOT NULL,
     `identifier` VARCHAR(64) NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_code_redemptions` (
     UNIQUE KEY `code_player` (`code_id`, `identifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `dj_donator_listings` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_listings` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `item_id` VARCHAR(64) NOT NULL,
     `category` VARCHAR(32) NOT NULL,

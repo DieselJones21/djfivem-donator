@@ -1,7 +1,7 @@
 -- Run this if you already imported install.sql before listings existed.
 -- New installs can skip this file (it is included in install.sql).
 
-CREATE TABLE IF NOT EXISTS `dj_donator_listings` (
+CREATE TABLE IF NOT EXISTS `dj_305donator_listings` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `item_id` VARCHAR(64) NOT NULL,
     `category` VARCHAR(32) NOT NULL,

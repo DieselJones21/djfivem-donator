@@ -1,5 +1,5 @@
 const IS_NUI = typeof GetParentResourceName === 'function';
-const RESOURCE = IS_NUI ? GetParentResourceName() : 'dj-donator';
+const RESOURCE = IS_NUI ? GetParentResourceName() : 'djfivem-305donator';
 
 const ICONS = {
     dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16zM4 20h6v-5H4v5z"/></svg>',

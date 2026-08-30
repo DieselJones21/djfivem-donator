@@ -1,4 +1,4 @@
-# The 305 Donator (`dj-donator`)
+# The 305 Donator (`djfivem-305donator`)
 
 FiveM donator store for **The 305**, with **Vice Coins**, Emerald / Sapphire / Black Diamond tiers, a Miami pink/cyan shop UI, Tebex console grants, oxmysql persistence, and Discord webhook logs.
 
@@ -26,15 +26,15 @@ Open with **F11** or `/donator`.
 
 ## Install
 
-1. Drop this resource in `resources` as `dj-donator` (or keep the repo folder name and ensure it in `server.cfg`).
-2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses. If you already imported an older install, also run [`sql/listings.sql`](sql/listings.sql) (the resource also creates that table on start).
+1. Put the folder in `resources` as **`djfivem-305donator`** (the folder name must match — ox_inventory exports and `nui://` image paths use it).
+2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses. This script uses `dj_305donator_*` tables (it does not share the old `dj-donator` tables). The resource also creates the listings table on start.
 3. Add to `server.cfg`:
 
 ```cfg
 ensure oxmysql
 ensure ox_inventory
 ensure jg-advancedgarages
-ensure dj-donator
+ensure djfivem-305donator
 
 add_ace group.admin donator.admin allow
 ```
@@ -92,7 +92,7 @@ Put this above the donator resource:
 ```cfg
 ensure oxmysql
 ensure ox_inventory
-ensure dj-donator
+ensure djfivem-305donator
 ```
 
 ### Inventory actions
@@ -108,7 +108,7 @@ ensure dj-donator
 Merge [`install/ox_inventory_items.lua`](install/ox_inventory_items.lua) into `ox_inventory/data/items.lua`, then restart ox_inventory. That file registers:
 
 - `donator_plate`, `penthouse_card`, `repairkit`
-- Pet items with `client.export = 'dj-donator.usePet'`
+- Pet items with `client.export = 'djfivem-305donator.usePet'`
 
 Players open the store with **F11** or `/donator`. `/coins` prints the current Vice Coin balance.
 
@@ -155,7 +155,7 @@ The **Admin** tab inside the store is where you add shop items, grant coins, cre
    - **Bundle items** — for bundles, add two or more ox_inventory names with counts (`armour` x5, `bandage` x10)
    - **Vehicle spawn name** — for cars (`sultan`)
    - **Item count**, **ammo**, **JG garage**, **pet model**, **unique**, **stock**, and limited dates as needed
-3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_donator_listings`.
+3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_305donator_listings`.
 4. Use **Edit** / **Delete** on the listings table to change or remove it.
 
 Weapons and extras grant the ox_inventory item. Bundles grant every item in the package. Vehicles go into JG Advanced Garages. Pets grant an ox item whose name is the listing id (set Custom id to your ox item name).
@@ -166,7 +166,7 @@ The default shop is empty on purpose so you only sell what you add.
 
 ## Catalog
 
-Listings live in the database, not in Lua. [`shared/catalog.lua`](shared/catalog.lua) starts empty and is filled from `dj_donator_listings` when the resource starts.
+Listings live in the database, not in Lua. [`shared/catalog.lua`](shared/catalog.lua) starts empty and is filled from `dj_305donator_listings` when the resource starts.
 
 ## Discord webhooks
 
@@ -180,10 +180,10 @@ Set any of these in `config.lua`. Leave a field blank to skip that channel.
 ## Exports
 
 ```lua
-exports['dj-donator']:GetCoins(source)
-exports['dj-donator']:AddCoins(source, amount, 'Tebex VIP')
-exports['dj-donator']:AddCoinsIdentifier('license:abc123', 500, 'Tebex VIP')
-exports['dj-donator']:GrantItemIdentifier('license:abc123', 'veh_sultan')
+exports['djfivem-305donator']:GetCoins(source)
+exports['djfivem-305donator']:AddCoins(source, amount, 'Tebex VIP')
+exports['djfivem-305donator']:AddCoinsIdentifier('license:abc123', 500, 'Tebex VIP')
+exports['djfivem-305donator']:GrantItemIdentifier('license:abc123', 'veh_sultan')
 ```
 
 Amounts are server-validated (positive integers, capped by `Config.Tebex.MaxGrant`).

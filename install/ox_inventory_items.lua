@@ -2,7 +2,7 @@
     Merge these entries into ox_inventory/data/items.lua.
 
     Shop and inventory icons come from Fivemanage (Config.Images) via metadata.imageurl
-    when a player receives the item from dj-donator. You do not need local PNGs if
+    when a player receives the item from djfivem-305donator. You do not need local PNGs if
     Config.Images.baseUrl is set.
 
     Optional: set client.image to the same Fivemanage URL so the item also shows
@@ -20,7 +20,7 @@ return {
         consume = 0,
         description = 'Donator plate pass from The 305 store.',
         client = {
-            image = 'nui://dj-donator/html/images/donator_plate.png',
+            image = 'nui://djfivem-305donator/html/images/donator_plate.png',
         },
     },
     ['penthouse_card'] = {
@@ -31,7 +31,7 @@ return {
         consume = 0,
         description = 'Keycard for The 305 penthouse interior.',
         client = {
-            image = 'nui://dj-donator/html/images/penthouse_card.png',
+            image = 'nui://djfivem-305donator/html/images/penthouse_card.png',
         },
     },
     ['repairkit'] = {
@@ -49,8 +49,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your husky.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_husky.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_husky.png',
         },
     },
     ['pet_retriever'] = {
@@ -61,8 +61,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your retriever.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_retriever.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_retriever.png',
         },
     },
     ['pet_rottweiler'] = {
@@ -73,8 +73,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your rottweiler.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_rottweiler.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_rottweiler.png',
         },
     },
     ['pet_pug'] = {
@@ -85,8 +85,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your pug.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_pug.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_pug.png',
         },
     },
     ['pet_cat'] = {
@@ -97,8 +97,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your cat.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_cat.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_cat.png',
         },
     },
     ['pet_poodle'] = {
@@ -109,8 +109,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your poodle.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/pet_poodle.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/pet_poodle.png',
         },
     },
     ['lim_panther'] = {
@@ -121,8 +121,8 @@ return {
         consume = 0,
         description = 'Use to spawn or dismiss your panther.',
         client = {
-            export = 'dj-donator.usePet',
-            image = 'nui://dj-donator/html/images/lim_panther.png',
+            export = 'djfivem-305donator.usePet',
+            image = 'nui://djfivem-305donator/html/images/lim_panther.png',
         },
     },
 }

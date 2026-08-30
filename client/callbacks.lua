@@ -6,11 +6,11 @@ function DonatorCallback(name, payload)
     local id = seq
     local p = promise.new()
     pending[id] = p
-    TriggerServerEvent('dj-donator:server:cb', id, name, payload or {})
+    TriggerServerEvent('djfivem-305donator:server:cb', id, name, payload or {})
     return Citizen.Await(p)
 end
 
-RegisterNetEvent('dj-donator:client:cb', function(id, result)
+RegisterNetEvent('djfivem-305donator:client:cb', function(id, result)
     local p = pending[id]
     if p then
         pending[id] = nil

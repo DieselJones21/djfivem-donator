@@ -168,7 +168,7 @@ local function sanitizeIdentifier(identifier)
 end
 
 local function withItemLock(itemId, fn)
-    local lockName = ('dj_donator_%s'):format(tostring(itemId))
+    local lockName = ('dj_305donator_%s'):format(tostring(itemId))
     local got = MySQL.scalar.await('SELECT GET_LOCK(?, 4)', { lockName })
     if got ~= 1 then
         return { ok = false, error = 'cooldown', message = Locale.cooldown }
@@ -176,7 +176,7 @@ local function withItemLock(itemId, fn)
     local ok, result = pcall(fn)
     MySQL.scalar.await('SELECT RELEASE_LOCK(?)', { lockName })
     if not ok then
-        print(('[dj-donator] locked action failed: %s'):format(result))
+        print(('[djfivem-305donator] locked action failed: %s'):format(result))
         return { ok = false, error = 'internal', message = 'Could not complete that action.' }
     end
     return result
@@ -246,7 +246,7 @@ local function flushPending(source)
                 local ok = applyInventoryGrant(source, item)
                 if ok then
                     data.pending = false
-                    MySQL.update.await('UPDATE dj_donator_owned SET data = ? WHERE id = ?', { json.encode(data), row.id })
+                    MySQL.update.await('UPDATE dj_305donator_owned SET data = ? WHERE id = ?', { json.encode(data), row.id })
                 end
             end
         end
@@ -452,7 +452,7 @@ RegisterDonatorCallback('purchase', function(source, payload)
         elseif item.weapon then
             Framework.Notify(source, Locale.weapon_granted, 'success')
         elseif item.petModel then
-            TriggerClientEvent('dj-donator:client:ownedPetsUpdated', source)
+            TriggerClientEvent('djfivem-305donator:client:ownedPetsUpdated', source)
         else
             Framework.Notify(source, Locale.item_granted, 'success')
         end
@@ -524,7 +524,7 @@ RegisterDonatorCallback('gift', function(source, payload)
         Framework.Notify(source, Locale.gifted, 'success')
         if targetSource then
             Framework.Notify(targetSource, Locale.received_gift .. ' (' .. item.label .. ')', 'success')
-            TriggerClientEvent('dj-donator:client:ownedPetsUpdated', targetSource)
+            TriggerClientEvent('djfivem-305donator:client:ownedPetsUpdated', targetSource)
         end
         return { ok = true, player = playerSnapshot(source), granted = data }
     end)
@@ -606,12 +606,12 @@ RegisterDonatorCallback('spawnPet', function(source, payload)
     if not item or not item.petModel then
         return { ok = false, error = 'invalid', message = 'That is not a pet.' }
     end
-    TriggerClientEvent('dj-donator:client:spawnPet', source, item.petModel, item.label)
+    TriggerClientEvent('djfivem-305donator:client:spawnPet', source, item.petModel, item.label)
     return { ok = true }
 end)
 
 RegisterDonatorCallback('despawnPet', function(source)
-    TriggerClientEvent('dj-donator:client:despawnPet', source)
+    TriggerClientEvent('djfivem-305donator:client:despawnPet', source)
     return { ok = true }
 end)
 
@@ -650,7 +650,7 @@ local function adminCoins(source, payload, mode)
     Webhooks.Coins(actorName, actorId, targetName, targetIdentifier, mode, amount, reason)
     if targetSource then
         Framework.Notify(targetSource, Locale.coins_received .. (' (%s %s)'):format(mode == 'remove' and ('-' .. amount) or amount, Config.CurrencyShort), 'success')
-        TriggerClientEvent('dj-donator:client:coinsUpdated', targetSource, result.coins)
+        TriggerClientEvent('djfivem-305donator:client:coinsUpdated', targetSource, result.coins)
     end
     if source ~= 0 then
         Framework.Notify(source, Locale.coins_granted, 'success')
@@ -768,7 +768,7 @@ RegisterDonatorCallback('adminRefund', function(source, payload)
     Webhooks.Admin(actorName, actorId, 'refund', ('Refunded %s %s for %s to %s'):format(purchase.price, Config.CurrencyShort, purchase.label, purchase.identifier))
     if target then
         Framework.Notify(target, Locale.refunded, 'inform')
-        TriggerClientEvent('dj-donator:client:coinsUpdated', target, DB.GetCoins(purchase.identifier).coins)
+        TriggerClientEvent('djfivem-305donator:client:coinsUpdated', target, DB.GetCoins(purchase.identifier).coins)
     end
     return { ok = true, admin = adminBundle() }
 end)
@@ -826,7 +826,7 @@ local function commandTarget(src, idArg)
         if src ~= 0 then
             Framework.Notify(src, Locale.invalid_player, 'error')
         else
-            print('[dj-donator] Invalid player id')
+            print('[djfivem-305donator] Invalid player id')
         end
         return
     end
@@ -888,7 +888,7 @@ RegisterCommand('checkcoins', function(src, args)
     local coins = DB.GetCoins(identifier)
     local msg = ('%s (%s) has %s %s'):format(name, identifier, coins.coins, Config.CurrencyShort)
     if src == 0 then
-        print('[dj-donator] ' .. msg)
+        print('[djfivem-305donator] ' .. msg)
     else
         Framework.Notify(src, msg, 'inform')
     end
@@ -930,7 +930,7 @@ local function tebexGrantCoins(src, args)
     local targetSource, identifier = resolveGrantTarget(args[1])
     local amount = sanitizeAmount(args[2])
     if not identifier or not amount then
-        print('[dj-donator] Usage: vicegrant <serverId|identifier> <amount> [reason]')
+        print('[djfivem-305donator] Usage: vicegrant <serverId|identifier> <amount> [reason]')
         return
     end
     adminCoins(src, {
@@ -940,7 +940,7 @@ local function tebexGrantCoins(src, args)
         reason = table.concat(args, ' ', 3),
     }, 'give')
     if src == 0 then
-        print(('[dj-donator] Granted %s %s to %s'):format(amount, Config.CurrencyShort, identifier))
+        print(('[djfivem-305donator] Granted %s %s to %s'):format(amount, Config.CurrencyShort, identifier))
     end
 end
 
@@ -949,12 +949,12 @@ local function tebexGrantPackage(src, args)
     local targetSource, identifier, name = resolveGrantTarget(args[1])
     local itemId = args[2] and tostring(args[2]) or ''
     if not identifier or itemId == '' then
-        print('[dj-donator] Usage: vicepackage <serverId|identifier> <itemId>')
+        print('[djfivem-305donator] Usage: vicepackage <serverId|identifier> <itemId>')
         return
     end
     local item = GetCatalogItem(itemId)
     if not item then
-        print('[dj-donator] Unknown catalog item: ' .. itemId)
+        print('[djfivem-305donator] Unknown catalog item: ' .. itemId)
         return
     end
     local result = withItemLock(item.id, function()
@@ -976,9 +976,9 @@ local function tebexGrantPackage(src, args)
     end)
     if src == 0 then
         if result.ok then
-            print(('[dj-donator] Granted %s to %s'):format(item.label, identifier))
+            print(('[djfivem-305donator] Granted %s to %s'):format(item.label, identifier))
         else
-            print(('[dj-donator] Package grant failed: %s'):format(result.error or 'unknown'))
+            print(('[djfivem-305donator] Package grant failed: %s'):format(result.error or 'unknown'))
         end
     end
     return result and result.ok
@@ -1011,7 +1011,7 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(player)
     end
 end)
 
-RegisterNetEvent('dj-donator:server:playerReady', function()
+RegisterNetEvent('djfivem-305donator:server:playerReady', function()
     onLoaded(source)
 end)
 
@@ -1058,14 +1058,14 @@ end)
 CreateThread(function()
     Wait(1000)
     local ok = pcall(function()
-        MySQL.query.await('SELECT 1 FROM dj_donator_coins LIMIT 1')
+        MySQL.query.await('SELECT 1 FROM dj_305donator_coins LIMIT 1')
     end)
     if not ok then
-        print('[dj-donator] WARNING: SQL tables are missing. Import sql/install.sql')
-        Webhooks.Error('Database missing', 'Import sql/install.sql before using dj-donator.')
+        print('[djfivem-305donator] WARNING: SQL tables are missing. Import sql/install.sql')
+        Webhooks.Error('Database missing', 'Import sql/install.sql before using djfivem-305donator.')
     else
         DB.EnsureSchema()
         Listings.Rebuild()
-        print(('[dj-donator] Shop listings loaded: %s'):format(#CatalogAll()))
+        print(('[djfivem-305donator] Shop listings loaded: %s'):format(#CatalogAll()))
     end
 end)

@@ -105,7 +105,7 @@ local function tryUpdate(query, params)
         MySQL.update.await(query, params)
     end)
     if not ok then
-        print(('[dj-donator] JG garage column update skipped: %s'):format(tostring(err)))
+        print(('[djfivem-305donator] JG garage column update skipped: %s'):format(tostring(err)))
     end
     return ok
 end
@@ -154,7 +154,7 @@ function JGGarage.Give(source, identifier, item, plate)
         )
     end
 
-    print(('[dj-donator] Stored %s (%s) in JG garage "%s" (%s) for %s'):format(model, plate, garageId, vehType, identifier))
+    print(('[djfivem-305donator] Stored %s (%s) in JG garage "%s" (%s) for %s'):format(model, plate, garageId, vehType, identifier))
     return plate, garageId
 end
 
@@ -165,8 +165,8 @@ CreateThread(function()
     end
     JGGarage.ready = started()
     if JGGarage.ready then
-        print('[dj-donator] Linked with jg-advancedgarages. Purchased vehicles go into the configured garage.')
+        print('[djfivem-305donator] Linked with jg-advancedgarages. Purchased vehicles go into the configured garage.')
     else
-        print('[dj-donator] jg-advancedgarages not started; vehicles use the fallback garage insert.')
+        print('[djfivem-305donator] jg-advancedgarages not started; vehicles use the fallback garage insert.')
     end
 end)

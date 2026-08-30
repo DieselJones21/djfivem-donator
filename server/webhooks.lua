@@ -18,7 +18,7 @@ local function embed(title, description, color, fields)
                 description = description,
                 color = color,
                 fields = fields,
-                footer = { text = Config.ServerName .. ' • dj-donator' },
+                footer = { text = Config.ServerName .. ' • djfivem-305donator' },
                 timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             },
         },

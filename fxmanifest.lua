@@ -2,10 +2,10 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-name 'dj-donator'
+name 'djfivem-305donator'
 author 'DieselJones21'
 description 'The 305 donator store with Vice Coins, Tebex grants, Fivemanage images, ox_inventory, and JG garages'
-version '1.5.0'
+version '1.6.0'
 
 shared_scripts {
     'config.lua',

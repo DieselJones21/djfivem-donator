@@ -1,7 +1,7 @@
 --[[
     Live shop catalog. Built-in listings are empty on purpose — admins add
     vehicles, weapons, extras, bundles, pets, exclusives, and limited drops
-    in-game from the Admin tab (stored in dj_donator_listings).
+    in-game from the Admin tab (stored in dj_305donator_listings).
 ]]
 
 function CatalogReset()

@@ -25,7 +25,7 @@ local function loadModel(model)
     return hash
 end
 
-RegisterNetEvent('dj-donator:client:spawnPet', function(model, label)
+RegisterNetEvent('djfivem-305donator:client:spawnPet', function(model, label)
     despawnPet()
     local hash = loadModel(model)
     if not hash then
@@ -48,7 +48,7 @@ RegisterNetEvent('dj-donator:client:spawnPet', function(model, label)
     EndTextCommandThefeedPostTicker(false, true)
 end)
 
-RegisterNetEvent('dj-donator:client:despawnPet', function()
+RegisterNetEvent('djfivem-305donator:client:despawnPet', function()
     despawnPet()
     BeginTextCommandThefeedPost('STRING')
     AddTextComponentSubstringPlayerName(Locale.pet_despawned)
