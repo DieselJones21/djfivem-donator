@@ -205,13 +205,13 @@ function OxInv.Add(source, name, count, metadata)
     metadata = metadata or {}
     metadata.imageurl = metadata.imageurl or Images.Resolve(resolved) or Images.Resolve(name)
     if not metadata.imageurl and (resolved == 'donator_plate' or resolved == 'penthouse_card' or resolved == 'lim_panther' or resolved:find('^pet_')) then
-        metadata.imageurl = ('nui://dj-donator/html/images/%s.png'):format(resolved)
+        metadata.imageurl = ('nui://%s/html/images/%s.png'):format(GetCurrentResourceName(), resolved)
     end
     local ok, success, response = pcall(function()
         return exports.ox_inventory:AddItem(source, resolved, count, metadata)
     end)
     if not ok then
-        print(('[dj-donator] ox_inventory AddItem failed: %s'):format(tostring(success)))
+        print(('[djfivem-305donator] ox_inventory AddItem failed: %s'):format(tostring(success)))
         return false, 'internal'
     end
     return success and true or false, response, resolved
@@ -274,8 +274,8 @@ CreateThread(function()
     end
     OxInv.ready = started()
     if OxInv.ready then
-        print('[dj-donator] Linked with ox_inventory for images, weight checks, and item grants.')
+        print('[djfivem-305donator] Linked with ox_inventory for images, weight checks, and item grants.')
     else
-        print('[dj-donator] WARNING: ox_inventory is not started. Item grants and images will not work.')
+        print('[djfivem-305donator] WARNING: ox_inventory is not started. Item grants and images will not work.')
     end
 end)

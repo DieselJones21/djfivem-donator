@@ -3,12 +3,12 @@ Config = {}
 -- Menu
 Config.Command = 'donator'
 Config.Keybind = 'F11'
-Config.KeybindDescription = 'Open Rebel Donator Store'
+Config.KeybindDescription = 'Open The 305 Donator Store'
 Config.CloseKey = 'Escape'
 
 -- Currency
-Config.CurrencyName = 'Rebel Coins'
-Config.CurrencyShort = 'RC'
+Config.CurrencyName = 'Vice Coins'
+Config.CurrencyShort = 'VC'
 
 -- Permissions (ACE + framework groups)
 Config.AdminAce = 'donator.admin'
@@ -105,8 +105,17 @@ Config.Pet = {
 Config.PurchaseCooldownMs = 1200
 Config.MaxGiftDistance = 12.0
 Config.AllowOfflineGifts = true
+-- Menu gifts to anyone on the server. Set false to require Config.MaxGiftDistance.
+Config.AllowRemoteGifts = true
 Config.AllowSelfGift = false
 Config.UniqueItemsOnce = true
+
+-- Tebex / console grants (vicegrant, vicepackage, givecoinsid)
+Config.Tebex = {
+    MaxGrant = 250000,
+    GrantCommand = 'vicegrant',
+    PackageCommand = 'vicepackage',
+}
 
 -- Discord logging (paste webhook URLs — leave blank to disable that channel)
 Config.Webhooks = {
@@ -117,18 +126,16 @@ Config.Webhooks = {
 }
 
 Config.WebhookColor = {
-    purchase = 13697070, -- red
+    purchase = 16711807, -- hot pink #FF007F
     coins = 16777215,    -- white
     admin = 11141120,    -- dark red
     error = 0,           -- black
 }
 
-Config.ServerName = 'Rebel RP'
+Config.ServerName = 'The 305'
 
--- Shop color theme: rebel | crimson | ocean | gold | emerald | violet
-Config.Theme = 'rebel'
--- Players can switch themes in the shop (saved in their NUI). Set false to lock Config.Theme.
-Config.AllowThemePicker = true
+-- Shop color theme (config only — no in-UI picker): miami | rebel | crimson | ocean | gold | emerald | violet
+Config.Theme = 'miami'
 
 -- Notifications: 'auto' | 'ox' | 'esx' | 'qb' | 'native'
 Config.Notify = 'auto'

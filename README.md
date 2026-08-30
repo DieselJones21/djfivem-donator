@@ -1,6 +1,6 @@
-# Rebel Donator (`dj-donator`)
+# The 305 Donator (`djfivem-305donator`)
 
-FiveM donator store with a **Rebel Coins** currency, themed gradient shop UI (Rebel red/white/blue plus Crimson, Ocean, Gold, Emerald, and Violet), oxmysql persistence, and Discord webhook logs for every purchase and admin action.
+FiveM donator store for **The 305**, with **Vice Coins**, Emerald / Sapphire / Black Diamond tiers, a Miami pink/cyan shop UI, Tebex console grants, oxmysql persistence, and Discord webhook logs.
 
 Open with **F11** or `/donator`.
 
@@ -8,15 +8,15 @@ Open with **F11** or `/donator`.
 
 - **In-game shop editor** — admins add vehicles, weapons, extras, bundles, pets, exclusives, and limited drops from the Admin tab (image link, display name, ox item name, price, and the rest)
 - **Empty catalog by default** — no built-in items; you add your own
-- **Vehicles** — bronze, silver, and gold tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
+- **Vehicles & weapons** — Emerald, Sapphire, and Black Diamond tiers, stored in **JG Advanced Garages** after purchase (ESX / QB / Qbox fallback if JG is not started)
 - **Weapons & extras** — granted through **ox_inventory** (`CanCarryItem`, `AddItem`, `RemoveItem`)
 - **Bundles** — one listing that grants multiple ox_inventory items in a single purchase
-- **Color themes** — Rebel (red/white/blue), Crimson, Ocean, Gold, Emerald, and Violet, with gradient panels and a swatch picker in the shop
+- **Color themes** — set only in `config.lua` (`miami` default). No in-UI theme picker.
 - **Images** — shop UI and inventory icons from **Fivemanage** CDN links (`metadata.imageurl`)
 - **City exclusives** — unique one-per-character vehicles, weapons, and access cards
 - **Limited time** — server-enforced windows, stock counts, and countdown in the UI
 - **Pets** — buy a companion ped, spawn / despawn it from ox_inventory
-- **Rebel Coins** — stored per character identifier, granted from chat commands or the in-menu admin panel
+- **Vice Coins** — stored per character identifier, granted from chat, Tebex console commands, or the in-menu admin panel
 - **Gifting** — buy an item for another player by server ID
 - **Redeem codes** — admins can mint codes that grant coins and/or catalog items
 - **Inventory + history** — owned items, 7-day spend chart, purchase log
@@ -26,15 +26,15 @@ Open with **F11** or `/donator`.
 
 ## Install
 
-1. Drop this resource in `resources` as `dj-donator` (or keep the repo folder name and ensure it in `server.cfg`).
-2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses. If you already imported an older install, also run [`sql/listings.sql`](sql/listings.sql) (the resource also creates that table on start).
+1. Put the folder in `resources` as **`djfivem-305donator`** (the folder name must match — ox_inventory exports and `nui://` image paths use it).
+2. Import [`sql/install.sql`](sql/install.sql) into the same database oxmysql uses. This script uses `dj_305donator_*` tables (it does not share the old `dj-donator` tables). The resource also creates the listings table on start.
 3. Add to `server.cfg`:
 
 ```cfg
 ensure oxmysql
 ensure ox_inventory
 ensure jg-advancedgarages
-ensure dj-donator
+ensure djfivem-305donator
 
 add_ace group.admin donator.admin allow
 ```
@@ -44,7 +44,7 @@ add_ace group.admin donator.admin allow
 4. Open [`config.lua`](config.lua) and set:
    - `Config.Images.baseUrl` to your Fivemanage folder URL
    - `Config.JGGarages.defaultGarage` to a JG garage **name** (example: `legion`)
-   - `Config.Theme` (`rebel`, `crimson`, `ocean`, `gold`, `emerald`, `violet`) and `Config.AllowThemePicker`
+   - `Config.Theme` (`miami`, `rebel`, `crimson`, `ocean`, `gold`, `emerald`, `violet`) — config only
    - `Config.Webhooks` Discord URLs
 5. Restart the server.
 
@@ -92,7 +92,7 @@ Put this above the donator resource:
 ```cfg
 ensure oxmysql
 ensure ox_inventory
-ensure dj-donator
+ensure djfivem-305donator
 ```
 
 ### Inventory actions
@@ -108,9 +108,9 @@ ensure dj-donator
 Merge [`install/ox_inventory_items.lua`](install/ox_inventory_items.lua) into `ox_inventory/data/items.lua`, then restart ox_inventory. That file registers:
 
 - `donator_plate`, `penthouse_card`, `repairkit`
-- Pet items with `client.export = 'dj-donator.usePet'`
+- Pet items with `client.export = 'djfivem-305donator.usePet'`
 
-Players open the store with **F11** or `/donator`. `/coins` prints the current Rebel Coin balance.
+Players open the store with **F11** or `/donator`. `/coins` prints the current Vice Coin balance.
 
 ## JG Advanced Garages
 
@@ -135,7 +135,9 @@ Admins are anyone with ACE `donator.admin`, ESX groups `admin` / `superadmin`, o
 | `/removecoins [id] [amount] [reason]` | Remove coins |
 | `/setcoins [id] [amount]` | Set an exact balance |
 | `/checkcoins [id]` | Inspect a player (or yourself) |
-| `/givecoinsid [identifier] [amount] [reason]` | Grant coins to an offline identifier |
+| `/givecoinsid [identifier] [amount] [reason]` | Grant coins to an offline identifier (also used by Tebex) |
+| `/vicegrant [id or identifier] [amount] [reason]` | Tebex / console Vice Coin grant |
+| `/vicepackage [id or identifier] [itemId]` | Tebex / console catalog grant (no coin charge) |
 | `/coins` | Show your own balance |
 
 The **Admin** tab inside the store is where you add shop items, grant coins, create redeem codes, inspect history, and refund purchases.
@@ -146,13 +148,14 @@ The **Admin** tab inside the store is where you add shop items, grant coins, cre
 2. Fill **Add shop listing**:
    - **Category** — Vehicle, Weapon, Extra item, Bundle, Pet, City exclusive, or Limited time
    - **Display name** — card title
-   - **Price** — Rebel Coins
+   - **Price** — Vice Coins
+   - **Tier** — Emerald, Sapphire, or Black Diamond (vehicles and weapons)
    - **Image link** — full Fivemanage URL (`https://r2.fivemanage.com/.../sultan.webp`)
    - **ox_inventory item name** — for weapons, extras, and pets (`armour`, `WEAPON_PISTOL`, `pet_husky`)
    - **Bundle items** — for bundles, add two or more ox_inventory names with counts (`armour` x5, `bandage` x10)
    - **Vehicle spawn name** — for cars (`sultan`)
    - **Item count**, **ammo**, **JG garage**, **pet model**, **unique**, **stock**, and limited dates as needed
-3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_donator_listings`.
+3. Click **Save listing**. It shows in that shop tab immediately and is stored in `dj_305donator_listings`.
 4. Use **Edit** / **Delete** on the listings table to change or remove it.
 
 Weapons and extras grant the ox_inventory item. Bundles grant every item in the package. Vehicles go into JG Advanced Garages. Pets grant an ox item whose name is the listing id (set Custom id to your ox item name).
@@ -163,7 +166,7 @@ The default shop is empty on purpose so you only sell what you add.
 
 ## Catalog
 
-Listings live in the database, not in Lua. [`shared/catalog.lua`](shared/catalog.lua) starts empty and is filled from `dj_donator_listings` when the resource starts.
+Listings live in the database, not in Lua. [`shared/catalog.lua`](shared/catalog.lua) starts empty and is filled from `dj_305donator_listings` when the resource starts.
 
 ## Discord webhooks
 
@@ -177,32 +180,52 @@ Set any of these in `config.lua`. Leave a field blank to skip that channel.
 ## Exports
 
 ```lua
-exports['dj-donator']:GetCoins(source)
-exports['dj-donator']:AddCoins(source, amount, 'Tebex VIP')
-exports['dj-donator']:AddCoinsIdentifier('license:abc', 500, 'Tebex VIP')
+exports['djfivem-305donator']:GetCoins(source)
+exports['djfivem-305donator']:AddCoins(source, amount, 'Tebex VIP')
+exports['djfivem-305donator']:AddCoinsIdentifier('license:abc123', 500, 'Tebex VIP')
+exports['djfivem-305donator']:GrantItemIdentifier('license:abc123', 'veh_sultan')
 ```
 
-Use `AddCoinsIdentifier` from a Tebex command when the buyer may not be in-game.
+Amounts are server-validated (positive integers, capped by `Config.Tebex.MaxGrant`).
+
+## Tebex
+
+Tebex runs commands as the server console. Use either the identifier (`{sid}` / license) or the online server id (`{id}`).
+
+**Give Vice Coins**
+
+```
+vicegrant {sid} 2500 Tebex VIP
+givecoinsid {sid} 2500 Tebex VIP
+```
+
+**Give a shop listing** (create the listing in Admin first, then use its Custom id)
+
+```
+vicepackage {sid} veh_sultan
+```
+
+If the player is offline, coins still apply. Vehicles still insert into JG / framework garages. ox_inventory items wait until they next join (`pending` grant).
 
 ## Color themes
 
 Set the default look in `config.lua`:
 
 ```lua
-Config.Theme = 'rebel' -- rebel | crimson | ocean | gold | emerald | violet
-Config.AllowThemePicker = true
+Config.Theme = 'miami' -- miami | rebel | crimson | ocean | gold | emerald | violet
 ```
 
 | Theme | Accent |
 |---|---|
-| `rebel` | Red / white / blue (default) |
-| `crimson` | Racing red, same family as the shops UI |
+| `miami` | The 305 — hot pink / cyan (default) |
+| `rebel` | Red / white / blue |
+| `crimson` | Racing red |
 | `ocean` | Cyan / blue |
 | `gold` | Gold / black |
 | `emerald` | Green |
-| `violet` | Pink / purple, same family as the wings UI |
+| `violet` | Pink / purple |
 
-When `AllowThemePicker` is true, players pick a theme from the swatches in the top bar. The choice is stored in that client’s NUI (`localStorage`). Set it to `false` to lock everyone to `Config.Theme`.
+Players cannot change this in the shop. Restart the resource after editing `Config.Theme`.
 
 ## UI preview
 

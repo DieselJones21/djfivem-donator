@@ -2,15 +2,16 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-name 'dj-donator'
+name 'djfivem-305donator'
 author 'DieselJones21'
-description 'Rebel Coins donator store with in-game listing editor, Fivemanage images, ox_inventory, and JG garages'
-version '1.3.0'
+description 'The 305 donator store with Vice Coins, Tebex grants, Fivemanage images, ox_inventory, and JG garages'
+version '1.6.0'
 
 shared_scripts {
     'config.lua',
     'shared/locale.lua',
     'shared/images.lua',
+    'shared/tiers.lua',
     'shared/catalog.lua',
 }
 

@@ -17,13 +17,13 @@ local function spawnFromItem(data)
         return
     end
     if GetActivePetLabel() then
-        TriggerEvent('dj-donator:client:despawnPet')
+        TriggerEvent('djfivem-305donator:client:despawnPet')
         Wait(200)
     end
-    TriggerEvent('dj-donator:client:spawnPet', model, label)
+    TriggerEvent('djfivem-305donator:client:spawnPet', model, label)
 end
 
---- ox_inventory client export: client.export = 'dj-donator.usePet'
+--- ox_inventory client export: client.export = 'djfivem-305donator.usePet'
 exports('usePet', function(data, slot)
     local payload = data or slot or {}
     if GetResourceState('ox_inventory') == 'started' and payload.name then
