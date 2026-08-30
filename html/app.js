@@ -29,17 +29,28 @@ const TABS = [
     { id: 'admin', label: 'Admin', admin: true },
 ];
 
-const THEMES = [
-    { id: 'miami', label: 'The 305', a: '#ff1a8c', b: '#00e5ff' },
-    { id: 'rebel', label: 'Rebel', a: '#c8102e', b: '#3b82f6' },
-    { id: 'crimson', label: 'Crimson', a: '#e10600', b: '#ff6a5a' },
-    { id: 'ocean', label: 'Ocean', a: '#0ea5e9', b: '#22d3ee' },
-    { id: 'gold', label: 'Gold', a: '#d4a017', b: '#fff1b8' },
-    { id: 'emerald', label: 'Emerald', a: '#10b981', b: '#6ee7b7' },
-    { id: 'violet', label: 'Violet', a: '#ff2ea6', b: '#a78bfa' },
-];
-const THEME_KEY = 'dj-donator-theme-305';
-const VALID_THEMES = THEMES.map((theme) => theme.id);
+const THEMES = ['miami', 'rebel', 'crimson', 'ocean', 'gold', 'emerald', 'violet'];
+const TIER_IDS = ['emerald', 'sapphire', 'blackdiamond'];
+const TIER_LABELS = { emerald: 'Emerald', sapphire: 'Sapphire', blackdiamond: 'Black Diamond' };
+const TIER_ALIASES = { bronze: 'emerald', silver: 'sapphire', gold: 'blackdiamond', black_diamond: 'blackdiamond', diamond: 'blackdiamond' };
+
+function normalizeTier(tier) {
+    if (!tier) return 'emerald';
+    const raw = String(tier).toLowerCase();
+    const compact = raw.replace(/[\s_-]+/g, '');
+    if (TIER_ALIASES[raw] || TIER_ALIASES[compact]) return TIER_ALIASES[raw] || TIER_ALIASES[compact];
+    if (TIER_IDS.includes(raw)) return raw;
+    if (TIER_IDS.includes(compact)) return compact;
+    return 'emerald';
+}
+
+function tierLabel(tier) {
+    return TIER_LABELS[normalizeTier(tier)] || 'Emerald';
+}
+
+function normalizeTheme(name) {
+    return THEMES.includes(name) ? name : 'miami';
+}
 
 const state = {
     tab: 'dashboard',
@@ -52,18 +63,17 @@ const state = {
     admin: { players: [], logs: [], codes: [], listings: [] },
     lookup: null,
     players: [],
-    currency: { name: '305 Coins', short: '305C' },
+    currency: { name: 'Vice Coins', short: 'VC' },
     serverName: 'The 305',
     keybind: 'F11',
     locale: {},
     theme: 'miami',
-    allowThemePicker: true,
 };
 
 function emptyCatalog() {
     return {
-        vehicles: { bronze: [], silver: [], gold: [] },
-        weapons: { bronze: [], silver: [], gold: [] },
+        vehicles: { emerald: [], sapphire: [], blackdiamond: [] },
+        weapons: { emerald: [], sapphire: [], blackdiamond: [] },
         extras: [],
         bundles: [],
         pets: [],
@@ -75,11 +85,11 @@ function emptyCatalog() {
 function putListing(catalog, item) {
     const copy = { ...item };
     if (item.category === 'vehicles') {
-        const tier = item.tier || 'bronze';
+        const tier = normalizeTier(item.tier);
         catalog.vehicles[tier] = catalog.vehicles[tier] || [];
         catalog.vehicles[tier].push(copy);
     } else if (item.category === 'weapons') {
-        const tier = item.tier || 'bronze';
+        const tier = normalizeTier(item.tier);
         catalog.weapons[tier] = catalog.weapons[tier] || [];
         catalog.weapons[tier].push(copy);
     } else if (catalog[item.category]) {
@@ -110,11 +120,11 @@ function previewCatalog() {
     const catalog = emptyCatalog();
     [
         decoratePreviewItem({
-            id: 'veh_sultan', category: 'vehicles', tier: 'gold', label: 'Karin Sultan',
-            description: 'Gold-tier donor car delivered to your garage.', price: 8750, remaining: 8,
+            id: 'veh_sultan', category: 'vehicles', tier: 'blackdiamond', label: 'Karin Sultan',
+            description: 'Black Diamond donor car delivered to your garage.', price: 8750, remaining: 8,
         }),
         decoratePreviewItem({
-            id: 'wep_pistol', category: 'weapons', tier: 'bronze', label: 'Combat Pistol',
+            id: 'wep_pistol', category: 'weapons', tier: 'emerald', label: 'Combat Pistol',
             description: 'Sidearm grant with ammo.', price: 2450, remaining: 18, item: 'WEAPON_PISTOL', weapon: 'WEAPON_PISTOL',
         }),
         decoratePreviewItem({
@@ -153,7 +163,7 @@ function mockNormalizeListing(data) {
     const item = {
         id,
         category,
-        tier: (category === 'vehicles' || category === 'weapons') ? (data.tier || 'bronze') : undefined,
+        tier: (category === 'vehicles' || category === 'weapons') ? normalizeTier(data.tier) : undefined,
         label,
         description: data.description || '',
         price,
@@ -186,7 +196,7 @@ function mockOpen() {
         ok: true,
         serverName: 'The 305',
         keybind: 'F11',
-        currency: { name: '305 Coins', short: '305C' },
+        currency: { name: 'Vice Coins', short: 'VC' },
         locale: {},
         player: {
             name: 'MoodyNewt8638',
@@ -211,7 +221,6 @@ function mockOpen() {
         },
         catalog: previewCatalog(),
         theme: 'miami',
-        allowThemePicker: true,
         players: [
             { id: 1, name: 'MoodyNewt8638' },
             { id: 12, name: 'NightGuest' },
@@ -224,8 +233,8 @@ function mockOpen() {
             logs: [],
             codes: [],
             listings: [
-                { id: 'veh_sultan', category: 'vehicles', tier: 'gold', label: 'Karin Sultan', price: 8750, model: 'sultan' },
-                { id: 'wep_pistol', category: 'weapons', tier: 'bronze', label: 'Combat Pistol', price: 2450, item: 'WEAPON_PISTOL', weapon: 'WEAPON_PISTOL' },
+                { id: 'veh_sultan', category: 'vehicles', tier: 'blackdiamond', label: 'Karin Sultan', price: 8750, model: 'sultan' },
+                { id: 'wep_pistol', category: 'weapons', tier: 'emerald', label: 'Combat Pistol', price: 2450, item: 'WEAPON_PISTOL', weapon: 'WEAPON_PISTOL' },
                 { id: 'ext_armour', category: 'extras', label: 'Armour Pack', price: 400, item: 'armour', extras: [{ item: 'armour', count: 5 }] },
                 { id: 'bdl_starter', category: 'bundles', label: 'Starter Kit', price: 250, extras: [{ item: 'armour', count: 5 }, { item: 'bandage', count: 10 }, { item: 'lockpick', count: 2 }] },
             ],
@@ -318,57 +327,13 @@ function applyPayload(payload) {
     if (payload.locale) state.locale = payload.locale;
     if (payload.lookup) state.lookup = payload.lookup;
     if (payload.players) state.players = payload.players;
-    if (payload.allowThemePicker !== undefined) state.allowThemePicker = !!payload.allowThemePicker;
     if (payload.theme) state.theme = normalizeTheme(payload.theme);
-}
-
-function normalizeTheme(name) {
-    return VALID_THEMES.includes(name) ? name : 'miami';
-}
-
-function savedTheme() {
-    try {
-        return localStorage.getItem(THEME_KEY);
-    } catch (err) {
-        return null;
-    }
-}
-
-function persistTheme(name) {
-    try {
-        localStorage.setItem(THEME_KEY, name);
-    } catch (err) {
-        /* NUI storage can be blocked */
-    }
-}
-
-function resolveTheme(payload) {
-    const serverTheme = normalizeTheme(payload?.theme || state.theme);
-    if (!state.allowThemePicker) return serverTheme;
-    const saved = savedTheme();
-    return saved && VALID_THEMES.includes(saved) ? saved : serverTheme;
-}
-
-function renderThemePicker() {
-    const root = document.getElementById('themePicker');
-    if (!root) return;
-    if (!state.allowThemePicker) {
-        root.hidden = true;
-        root.innerHTML = '';
-        return;
-    }
-    root.hidden = false;
-    root.innerHTML = THEMES.map((theme) => `
-        <button type="button" class="theme-swatch ${state.theme === theme.id ? 'active' : ''}" data-theme="${theme.id}" title="${theme.label}" aria-label="${theme.label}" style="--swatch-a:${theme.a};--swatch-b:${theme.b}"></button>
-    `).join('');
 }
 
 function applyTheme(name) {
     const theme = normalizeTheme(name);
     state.theme = theme;
     document.getElementById('app').dataset.theme = theme;
-    if (state.allowThemePicker) persistTheme(theme);
-    renderThemePicker();
 }
 
 function openUI(payload) {
@@ -376,7 +341,7 @@ function openUI(payload) {
     document.getElementById('app').classList.remove('hidden');
     if (!IS_NUI) document.getElementById('app').classList.add('preview');
     document.getElementById('closeHint').textContent = state.keybind;
-    applyTheme(resolveTheme(payload));
+    applyTheme(payload?.theme || state.theme);
     render();
 }
 
@@ -389,7 +354,7 @@ function closeUI() {
 function findItem(itemId) {
     const cat = state.catalog || {};
     const buckets = [];
-    ['bronze', 'silver', 'gold'].forEach((tier) => {
+    TIER_IDS.forEach((tier) => {
         (cat.vehicles?.[tier] || []).forEach((i) => buckets.push({ ...i, category: 'vehicles', tier }));
         (cat.weapons?.[tier] || []).forEach((i) => buckets.push({ ...i, category: 'weapons', tier }));
     });
@@ -427,7 +392,7 @@ function remainingLabel(item) {
 function allCatalogItems() {
     const cat = state.catalog || emptyCatalog();
     const out = [];
-    ['bronze', 'silver', 'gold'].forEach((tier) => {
+    TIER_IDS.forEach((tier) => {
         (cat.vehicles?.[tier] || []).forEach((item) => out.push({ ...item, category: 'vehicles', tier }));
         (cat.weapons?.[tier] || []).forEach((item) => out.push({ ...item, category: 'weapons', tier }));
     });
@@ -526,7 +491,7 @@ function itemCard(item, extra = {}) {
         : '';
     let badge = '';
     if (extra.featured || item.category === 'bundles') badge = '<div class="tierchip popular">POPULAR</div>';
-    else if (tier) badge = `<div class="tierchip ${tier}">${tier}</div>`;
+    else if (tier) badge = `<div class="tierchip ${normalizeTier(tier)}">${escapeHtml(tierLabel(tier))}</div>`;
     else if (item.limitedUntil) badge = '<div class="tierchip limited">LIMITED</div>';
     const remaining = item.remaining;
     const stock = remaining != null
@@ -585,8 +550,8 @@ function shopToolbar(title, sub, extraHtml = '') {
 function shopListFor(kind, tier) {
     const groups = state.catalog?.[kind] || {};
     if (tier === 'all') {
-        return ['bronze', 'silver', 'gold'].flatMap((name) =>
-            (groups[name] || []).map((item) => ({ ...item, category: kind, tier: item.tier || name }))
+        return TIER_IDS.flatMap((name) =>
+            (groups[name] || []).map((item) => ({ ...item, category: kind, tier: normalizeTier(item.tier || name) }))
         );
     }
     return (groups[tier] || []).map((item) => ({ ...item, category: kind, tier: item.tier || tier }));
@@ -596,7 +561,7 @@ function tierPills(kind) {
     const current = kind === 'vehicles' ? state.vehicleTier : state.weaponTier;
     return `
         <div class="pills" id="tierPills">
-            ${['all', 'bronze', 'silver', 'gold'].map((tier) => `<button class="pill ${tier} ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier === 'all' ? 'All' : tier[0].toUpperCase() + tier.slice(1)}</button>`).join('')}
+            ${['all', ...TIER_IDS].map((tier) => `<button class="pill ${tier} ${current === tier ? 'active' : ''}" data-tier="${tier}">${tier === 'all' ? 'All' : tierLabel(tier)}</button>`).join('')}
         </div>
     `;
 }
@@ -616,7 +581,7 @@ function renderVehicles() {
     const list = filterList(shopListFor('vehicles', tier));
     return `
         <section class="panel">
-            ${shopToolbar('Vehicles', 'Bronze, silver, and gold 305 rides, stored in your garage.', tierPills('vehicles'))}
+            ${shopToolbar('Vehicles', 'Emerald, Sapphire, and Black Diamond 305 rides, stored in your garage.', tierPills('vehicles'))}
             <div class="grid">${list.map((item) => itemCard(item, { tier: item.tier })).join('') || '<div class="empty">No vehicles in this tier yet. Admins add them from the Admin tab.</div>'}</div>
         </section>
     `;
@@ -749,7 +714,7 @@ function renderInventory() {
                 <div class="owned-row">
                     <div>
                         <strong>${escapeHtml(row.label)}</strong>
-                        <div class="sub">${escapeHtml(row.category)}${row.tier ? ` • ${row.tier}` : ''} • ${formatDate(row.created_at)}</div>
+                        <div class="sub">${escapeHtml(row.category)}${row.tier ? ` • ${escapeHtml(tierLabel(row.tier))}` : ''} • ${formatDate(row.created_at)}</div>
                     </div>
                     <div class="actions">
                         ${isPet ? `<button class="btn primary" data-spawn="${row.item_id}">Spawn pet</button><button class="btn ghost" id="despawnPet">Send pet away</button>` : ''}
@@ -858,7 +823,7 @@ function fillListingForm(item) {
     set('listEditingId', item?.id || '');
     set('listId', item?.id || '');
     set('listCategory', item?.category || 'extras');
-    set('listTier', item?.tier || 'bronze');
+    set('listTier', item?.tier ? normalizeTier(item.tier) : 'emerald');
     set('listLabel', item?.label || '');
     set('listDescription', item?.description || '');
     set('listPrice', item?.price ?? '');
@@ -893,7 +858,7 @@ function renderAdmin() {
             <div class="panel-head">
                 <div>
                     <h2>Admin panel</h2>
-                    <div class="sub">Add shop listings, including multi-item bundles, then grant 305 Coins.</div>
+                    <div class="sub">Add shop listings, including multi-item bundles, then grant Vice Coins.</div>
                 </div>
                 <button class="btn ghost" id="adminRefresh">Refresh</button>
             </div>
@@ -915,9 +880,9 @@ function renderAdmin() {
                 <div class="field" data-for="vehicles weapons">
                     <label>Tier</label>
                     <select id="listTier">
-                        <option value="bronze">Bronze</option>
-                        <option value="silver">Silver</option>
-                        <option value="gold">Gold</option>
+                        <option value="emerald">Emerald</option>
+                        <option value="sapphire">Sapphire</option>
+                        <option value="blackdiamond">Black Diamond</option>
                     </select>
                 </div>
                 <div class="field" data-for="all">
@@ -925,7 +890,7 @@ function renderAdmin() {
                     <input id="listLabel" placeholder="Karin Sultan" />
                 </div>
                 <div class="field" data-for="all">
-                    <label>Price (305C)</label>
+                    <label>Price (VC)</label>
                     <input id="listPrice" type="number" min="0" placeholder="250" />
                 </div>
                 <div class="field full" data-for="all">
@@ -1007,13 +972,13 @@ function renderAdmin() {
             </div>
             <h3 style="margin:18px 0 8px">Shop listings</h3>
             <table class="table">
-                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>305C</th><th></th></tr></thead>
+                <thead><tr><th></th><th>Name</th><th>Category</th><th>Item</th><th>VC</th><th></th></tr></thead>
                 <tbody>
                     ${listings.map((row) => `
                         <tr>
                             <td>${row.image ? `<img class="listing-thumb" src="${escapeHtml(row.image)}" alt="" />` : ''}</td>
                             <td>${escapeHtml(row.label)}<div class="sub">${escapeHtml(row.id)}</div></td>
-                            <td>${escapeHtml(row.category)}${row.tier ? ` / ${escapeHtml(row.tier)}` : ''}</td>
+                            <td>${escapeHtml(row.category)}${row.tier ? ` / ${escapeHtml(tierLabel(row.tier))}` : ''}</td>
                             <td>${escapeHtml(listingContents(row))}</td>
                             <td>${formatCoins(row.price)}</td>
                             <td class="actions">
@@ -1048,7 +1013,7 @@ function renderAdmin() {
                     </div>
                     <h3 style="margin:18px 0 8px">Online players</h3>
                     <table class="table">
-                        <thead><tr><th>ID</th><th>Name</th><th>305C</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>VC</th></tr></thead>
                         <tbody>
                             ${players.map((p) => `<tr data-fill-id="${p.id}" style="cursor:pointer"><td>${p.id}</td><td>${escapeHtml(p.name)}</td><td>${formatCoins(p.coins)}</td></tr>`).join('') || '<tr><td colspan="3">No players.</td></tr>'}
                         </tbody>
@@ -1072,7 +1037,7 @@ function renderAdmin() {
                     </table>
                     <h3 style="margin:18px 0 8px">Codes</h3>
                     <table class="table">
-                        <thead><tr><th>Code</th><th>305C</th><th>Uses</th></tr></thead>
+                        <thead><tr><th>Code</th><th>VC</th><th>Uses</th></tr></thead>
                         <tbody>
                             ${codes.map((row) => `<tr><td>${escapeHtml(row.code)}</td><td>${formatCoins(row.coins)}</td><td>${row.uses}/${row.max_uses}</td></tr>`).join('') || '<tr><td colspan="3">None</td></tr>'}
                         </tbody>
@@ -1327,7 +1292,7 @@ function showRedeemModal() {
     modal.innerHTML = `
         <div class="modal-card">
             <h3>Redeem code</h3>
-            <p>Enter a 305 Coins code from staff or a package.</p>
+            <p>Enter a Vice Coins code from staff or a Tebex package.</p>
             <div class="field">
                 <label>Code</label>
                 <input id="redeemCode" placeholder="REBEL100" />
@@ -1350,7 +1315,6 @@ function showRedeemModal() {
 function render() {
     renderTabs();
     renderHeader();
-    renderThemePicker();
     renderContent();
 }
 
@@ -1384,11 +1348,6 @@ document.getElementById('modeInventory').addEventListener('click', () => {
     render();
 });
 document.getElementById('headerRedeem').addEventListener('click', showRedeemModal);
-document.getElementById('themePicker').addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-theme]');
-    if (!btn) return;
-    applyTheme(btn.dataset.theme);
-});
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeUI();

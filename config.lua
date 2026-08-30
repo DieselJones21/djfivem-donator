@@ -7,8 +7,8 @@ Config.KeybindDescription = 'Open The 305 Donator Store'
 Config.CloseKey = 'Escape'
 
 -- Currency
-Config.CurrencyName = '305 Coins'
-Config.CurrencyShort = '305C'
+Config.CurrencyName = 'Vice Coins'
+Config.CurrencyShort = 'VC'
 
 -- Permissions (ACE + framework groups)
 Config.AdminAce = 'donator.admin'
@@ -105,8 +105,17 @@ Config.Pet = {
 Config.PurchaseCooldownMs = 1200
 Config.MaxGiftDistance = 12.0
 Config.AllowOfflineGifts = true
+-- Menu gifts to anyone on the server. Set false to require Config.MaxGiftDistance.
+Config.AllowRemoteGifts = true
 Config.AllowSelfGift = false
 Config.UniqueItemsOnce = true
+
+-- Tebex / console grants (vicegrant, vicepackage, givecoinsid)
+Config.Tebex = {
+    MaxGrant = 250000,
+    GrantCommand = 'vicegrant',
+    PackageCommand = 'vicepackage',
+}
 
 -- Discord logging (paste webhook URLs — leave blank to disable that channel)
 Config.Webhooks = {
@@ -125,10 +134,8 @@ Config.WebhookColor = {
 
 Config.ServerName = 'The 305'
 
--- Shop color theme: miami | rebel | crimson | ocean | gold | emerald | violet
+-- Shop color theme (config only — no in-UI picker): miami | rebel | crimson | ocean | gold | emerald | violet
 Config.Theme = 'miami'
--- Players can switch themes in the shop (saved in their NUI). Set false to lock Config.Theme.
-Config.AllowThemePicker = true
 
 -- Notifications: 'auto' | 'ox' | 'esx' | 'qb' | 'native'
 Config.Notify = 'auto'

@@ -21,9 +21,9 @@ local CATEGORIES = {
 }
 
 local TIERS = {
-    bronze = true,
-    silver = true,
-    gold = true,
+    emerald = true,
+    sapphire = true,
+    blackdiamond = true,
 }
 
 local function trim(value)
@@ -141,8 +141,11 @@ function Listings.Normalize(payload, existingId)
     local tier = trim(payload.tier)
     if category ~= 'vehicles' and category ~= 'weapons' then
         tier = nil
-    elseif tier == '' or not TIERS[tier] then
-        tier = 'bronze'
+    else
+        tier = NormalizeTier(tier)
+        if not TIERS[tier] then
+            tier = 'emerald'
+        end
     end
 
     local extras = parseExtras(payload)
@@ -260,7 +263,7 @@ function Listings.FromRow(row)
     local item = {
         id = row.item_id,
         category = row.category,
-        tier = row.tier,
+        tier = row.tier and NormalizeTier(row.tier) or nil,
         label = row.label,
         description = row.description,
         price = tonumber(row.price) or 0,

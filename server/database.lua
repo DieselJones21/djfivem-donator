@@ -110,7 +110,15 @@ function DB.DecrementStockNote(itemId)
 end
 
 function DB.CountItemSold(itemId)
-    local row = MySQL.single.await('SELECT COUNT(*) AS n FROM dj_donator_purchases WHERE item_id = ?', { itemId })
+    local ok, row = pcall(function()
+        return MySQL.single.await(
+            'SELECT COUNT(*) AS n FROM dj_donator_purchases WHERE item_id = ? AND IFNULL(refunded, 0) = 0',
+            { itemId }
+        )
+    end)
+    if not ok or not row then
+        row = MySQL.single.await('SELECT COUNT(*) AS n FROM dj_donator_purchases WHERE item_id = ?', { itemId })
+    end
     return row and tonumber(row.n) or 0
 end
 
@@ -134,10 +142,47 @@ function DB.HasRedeemed(codeId, identifier)
 end
 
 function DB.RedeemCode(codeId, identifier)
-    MySQL.update.await('UPDATE dj_donator_codes SET uses = uses + 1 WHERE id = ?', { codeId })
-    MySQL.insert.await(
-        'INSERT INTO dj_donator_code_redemptions (code_id, identifier) VALUES (?, ?)',
-        { codeId, identifier }
+    return DB.TryRedeemCode(codeId, identifier)
+end
+
+function DB.TryRedeemCode(codeId, identifier)
+    local changed = MySQL.update.await(
+        'UPDATE dj_donator_codes SET uses = uses + 1 WHERE id = ? AND (max_uses IS NULL OR max_uses <= 0 OR uses < max_uses)',
+        { codeId }
+    )
+    if not changed or changed < 1 then
+        return false
+    end
+    local ok = pcall(function()
+        MySQL.insert.await(
+            'INSERT INTO dj_donator_code_redemptions (code_id, identifier) VALUES (?, ?)',
+            { codeId, identifier }
+        )
+    end)
+    if not ok then
+        MySQL.update.await('UPDATE dj_donator_codes SET uses = GREATEST(0, uses - 1) WHERE id = ?', { codeId })
+        return false
+    end
+    return true
+end
+
+function DB.UndoRedeem(codeId, identifier)
+    MySQL.update.await('UPDATE dj_donator_codes SET uses = GREATEST(0, uses - 1) WHERE id = ?', { codeId })
+    MySQL.query.await('DELETE FROM dj_donator_code_redemptions WHERE code_id = ? AND identifier = ?', { codeId, identifier })
+end
+
+function DB.TryMarkRefunded(purchaseId)
+    local changed = MySQL.update.await(
+        'UPDATE dj_donator_purchases SET refunded = 1 WHERE id = ? AND IFNULL(refunded, 0) = 0',
+        { purchaseId }
+    )
+    return changed and changed > 0
+end
+
+function DB.DeleteLastPurchase(identifier, itemId)
+    MySQL.query.await(
+        'DELETE FROM dj_donator_purchases WHERE identifier = ? AND item_id = ? ORDER BY id DESC LIMIT 1',
+        { identifier, itemId }
     )
 end
 
@@ -188,6 +233,18 @@ function DB.EnsureListingsTable()
             KEY `category` (`category`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ]])
+end
+
+function DB.EnsureSchema()
+    DB.EnsureListingsTable()
+    pcall(function()
+        MySQL.query.await('ALTER TABLE dj_donator_purchases ADD COLUMN refunded TINYINT(1) NOT NULL DEFAULT 0')
+    end)
+    pcall(function()
+        MySQL.update.await("UPDATE dj_donator_listings SET tier = 'emerald' WHERE LOWER(tier) = 'bronze'")
+        MySQL.update.await("UPDATE dj_donator_listings SET tier = 'sapphire' WHERE LOWER(tier) = 'silver'")
+        MySQL.update.await("UPDATE dj_donator_listings SET tier = 'blackdiamond' WHERE LOWER(tier) IN ('gold', 'black_diamond', 'black diamond', 'diamond')")
+    end)
 end
 
 function DB.GetListings()

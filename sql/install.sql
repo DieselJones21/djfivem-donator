@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `dj_donator_purchases` (
     `price` INT NOT NULL,
     `quantity` INT NOT NULL DEFAULT 1,
     `gifted_to` VARCHAR(64) DEFAULT NULL,
+    `refunded` TINYINT(1) NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `identifier_created` (`identifier`, `created_at`)

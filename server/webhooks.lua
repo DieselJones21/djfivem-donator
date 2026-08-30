@@ -40,7 +40,7 @@ function Webhooks.Purchase(actorName, actorId, item, price, giftedTo)
 end
 
 function Webhooks.Coins(actorName, actorId, targetName, targetId, action, amount, reason)
-    post(Config.Webhooks.coins, embed((Config.CurrencyName or '305 Coins') .. ' ' .. action, reason or 'No reason provided.', Config.WebhookColor.coins, {
+    post(Config.Webhooks.coins, embed((Config.CurrencyName or 'Vice Coins') .. ' ' .. action, reason or 'No reason provided.', Config.WebhookColor.coins, {
         { name = 'Admin', value = ('%s\n`%s`'):format(actorName or 'Console', actorId or 'console'), inline = true },
         { name = 'Target', value = ('%s\n`%s`'):format(targetName or 'Unknown', targetId or 'n/a'), inline = true },
         { name = 'Amount', value = tostring(amount), inline = true },
